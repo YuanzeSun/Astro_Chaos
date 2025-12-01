@@ -56,21 +56,38 @@ EFFECT_MAP = {
     "提升": 3.0,      
     "小幅提升": 1.5,   
     "轻微提升": 1.0,   
+
+    "大幅下降": 4.0,  
+    "下降": 3.0,      
+    "小幅下降": 1,
+    "轻微下降": 0.5,
+
     # 压力数值 
-    "大幅增高": 15.0,  
-    "增高": 8.0,     
-    "小幅增高": 3.0,   
-    "大幅降低": -15.0, "降低": -8.0, "小幅降低": -3.0,
+    "压力大幅增高": 15.0,  
+    "压力增高": 8.0,     
+    "压力小幅增高": 3.0,   
+    "压力大幅降低": -15.0, "压力降低": -8.0, "压力小幅降低": -3.0,
     # 淘汰惩罚
     "淘汰增压": 15.0,
 }
 
 # 天气 (不变)
-WEATHERS = ["晴朗", "少云", "多云", "阴天", "大雨", "暴雪"]
+WEATHERS = ["晴朗", "少云", "多云", "阴天", "大雨"]
 
 # 名字库 (不变)
-SURNAMES = ["张", "王", "李", "赵", "刘", "陈", "杨", "黄", "吴", "徐", "孙", "马", "高", "林", "郭", "何"]
-NAMES = ["宇轩", "子涵", "浩然", "梓萱", "雨泽", "欣怡", "嘉豪", "诗涵", "明轩", "一诺", "睿", "辰", "星", "月"]
+SURNAMES = [
+    "张", "王", "李", "赵", "刘", "陈", "杨", "黄", "吴", "徐", "孙", "马", "朱",
+    "胡", "林", "郭", "何", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许",
+    "邓", "冯", "曹", "彭", "曾", "肖", "田", "董", "潘", "袁", "于", "蒋",
+    "蔡", "余", "杜", "叶", "范", "韩", "金", "邱", "姜", "覃"
+]
+NAMES = [
+    "子涵", "梓涵", "思源", "嘉琪", "浩然", "子瑜", "语晨", "雨泽", "若溪", "俊熙",
+    "睿航", "思睿", "奕辰", "晨曦", "书瑶", "依诺", "芷若", "欣怡", "诗琪", "浩宇",
+    "怡然", "昕悦", "嘉懿", "沐阳", "一航", "子墨", "梓萱", "靖雯", "若楠", "星辰",
+    "明轩", "皓轩", "嘉豪", "芷宁", "雅涵", "之恒", "瑞宁", "泽楷", "子睿", "钰琪",
+    "晨悦", "若彤", "思辰", "梓逸", "绍涵", "煜城", "沐辰", "凌云", "嘉禾", "乐瑶"
+]
 
 
 # ==========================================
@@ -79,30 +96,30 @@ NAMES = ["宇轩", "子涵", "浩然", "梓萱", "雨泽", "欣怡", "嘉豪", "
 
 FULL_TRAINING_POOL = [
     # 核心训练 
-    {"name": "模拟笔试", "cost": 100, "stress_desc": "压力增高", "gains_desc": "理论提升", "stress": EFFECT_MAP["增高"], "gains": {"理论": EFFECT_MAP["提升"]}},
-    {"name": "竞赛真题", "cost": 50, "stress_desc": "压力大幅增高", "gains_desc": "理论大幅提升, 常识小幅提升", "stress": EFFECT_MAP["大幅增高"], "gains": {"理论": EFFECT_MAP["大幅提升"], "常识": EFFECT_MAP["小幅提升"]}},
-    {"name": "夜间观测", "cost": 300, "stress_desc": "压力增高", "gains_desc": "观测大幅提升, 实测小幅提升", "stress": EFFECT_MAP["增高"], "gains": {"观测": EFFECT_MAP["大幅提升"], "实测": EFFECT_MAP["小幅提升"]}, "req_weather": ["晴朗", "少云"]},
-    {"name": "数据处理", "cost": 150, "stress_desc": "压力小幅增高", "gains_desc": "实测提升, 理论轻微提升", "stress": EFFECT_MAP["小幅增高"], "gains": {"实测": EFFECT_MAP["提升"], "理论": EFFECT_MAP["轻微提升"]}},
-    {"name": "常识讲座", "cost": 200, "stress_desc": "压力小幅降低", "gains_desc": "常识大幅提升, 理论轻微提升", "stress": EFFECT_MAP["小幅降低"], "gains": {"常识": EFFECT_MAP["大幅提升"], "理论": EFFECT_MAP["轻微提升"]}},
+    {"name": "模拟笔试", "cost": 100, "stress_desc": "压力增高", "gains_desc": "理论提升, 实测小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"理论": EFFECT_MAP["提升"], "实测": EFFECT_MAP["小幅提升"]}},
+    {"name": "竞赛真题", "cost": 50, "stress_desc": "压力大幅增高", "gains_desc": "理论大幅提升, 常识小幅提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"理论": EFFECT_MAP["大幅提升"], "常识": EFFECT_MAP["小幅提升"]}},
+    {"name": "外出观测", "cost": 400, "stress_desc": "压力小幅增高", "gains_desc": "观测大幅提升, 实测小幅提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"观测": EFFECT_MAP["大幅提升"], "实测": EFFECT_MAP["小幅提升"]}, "req_weather": ["晴朗", "少云"]},
+    {"name": "数据处理", "cost": 150, "stress_desc": "压力增高", "gains_desc": "实测提升, 理论轻微提升", "stress": EFFECT_MAP["压力增高"], "gains": {"实测": EFFECT_MAP["提升"], "理论": EFFECT_MAP["轻微提升"]}},
+    {"name": "常识讲座", "cost": 200, "stress_desc": "压力小幅降低", "gains_desc": "常识大幅提升, 理论轻微提升", "stress": EFFECT_MAP["压力小幅降低"], "gains": {"常识": EFFECT_MAP["大幅提升"], "理论": EFFECT_MAP["轻微提升"]}},
     
     # 减压/赚钱 
-    {"name": "专业按摩", "cost": 800, "stress_desc": "压力大幅降低", "gains_desc": "常识轻微提升", "stress": EFFECT_MAP["大幅降低"], "gains": {"常识": EFFECT_MAP["轻微提升"]}}, 
-    {"name": "社团接单", "cost": 0, "stress_desc": "压力增高", "gains_desc": "实测轻微提升", "stress": EFFECT_MAP["增高"], "gains": {"实测": EFFECT_MAP["轻微提升"]}, "money_gain": 400}, 
-    {"name": "科教片放松", "cost": 150, "stress_desc": "压力降低", "gains_desc": "常识提升", "stress": EFFECT_MAP["降低"], "gains": {"常识": EFFECT_MAP["提升"]}},
+    {"name": "专业按摩", "cost": 800, "stress_desc": "压力大幅降低", "gains_desc": "常识轻微提升", "stress": EFFECT_MAP["压力大幅降低"], "gains": {"常识": EFFECT_MAP["轻微提升"]}}, 
+    {"name": "社团接单", "cost": 0, "stress_desc": "压力增高", "gains_desc": "实测轻微提升", "stress": EFFECT_MAP["压力增高"], "gains": {"实测": EFFECT_MAP["轻微提升"]}, "money_gain": 400}, 
+    {"name": "科教片放松", "cost": 200, "stress_desc": "压力降低", "gains_desc": "常识大幅提升", "stress": EFFECT_MAP["压力降低"], "gains": {"常识": EFFECT_MAP["大幅提升"]}},
     
     # 综合训练
-    {"name": "跨学科研讨", "cost": 150, "stress_desc": "压力增高", "gains_desc": "理论提升, 实测小幅提升", "stress": EFFECT_MAP["增高"], "gains": {"理论": EFFECT_MAP["提升"], "实测": EFFECT_MAP["小幅提升"]}},
-    {"name": "撰写科普文", "cost": 100, "stress_desc": "压力小幅增高", "gains_desc": "常识提升, 实测小幅提升", "stress": EFFECT_MAP["小幅增高"], "gains": {"常识": EFFECT_MAP["提升"], "实测": EFFECT_MAP["小幅提升"]}},
-    {"name": "寻找新星", "cost": 400, "stress_desc": "压力增高", "gains_desc": "观测提升, 常识小幅提升", "stress": EFFECT_MAP["增高"], "gains": {"观测": EFFECT_MAP["提升"], "常识": EFFECT_MAP["小幅提升"]}, "req_weather": ["晴朗", "少云"]},
-    {"name": "计算轨道", "cost": 100, "stress_desc": "压力大幅增高", "gains_desc": "理论大幅提升, 实测提升", "stress": EFFECT_MAP["大幅增高"], "gains": {"理论": EFFECT_MAP["大幅提升"], "实测": EFFECT_MAP["提升"]}},
-    {"name": "星图识别训练", "cost": 100, "stress_desc": "压力小幅增高", "gains_desc": "观测提升, 常识提升", "stress": EFFECT_MAP["小幅增高"], "gains": {"观测": EFFECT_MAP["提升"], "常识": EFFECT_MAP["提升"]}},
-    {"name": "黑洞科普", "cost": 150, "stress_desc": "压力小幅降低", "gains_desc": "理论提升, 常识提升", "stress": EFFECT_MAP["小幅降低"], "gains": {"理论": EFFECT_MAP["提升"], "常识": EFFECT_MAP["提升"]}},
+    {"name": "跨学科研讨", "cost": 0, "stress_desc": "压力增高", "gains_desc": "理论小幅提升, 实测小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"理论": EFFECT_MAP["小幅提升"], "实测": EFFECT_MAP["小幅提升"]}},
+    {"name": "撰写科普文", "cost": 0, "stress_desc": "压力增高", "gains_desc": "常识提升, 理论小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"常识": EFFECT_MAP["提升"], "理论": EFFECT_MAP["小幅提升"]}},
+    {"name": "寻找新星", "cost": 500, "stress_desc": "压力小幅增高", "gains_desc": "观测提升, 实测提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"观测": EFFECT_MAP["提升"], "实测": EFFECT_MAP["提升"]}, "req_weather": ["晴朗", "少云"]},
+    {"name": "计算轨道", "cost": 100, "stress_desc": "压力大幅增高", "gains_desc": "实测大幅提升, 理论提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"实测": EFFECT_MAP["大幅提升"], "理论": EFFECT_MAP["提升"]}},
+    {"name": "星图识别训练", "cost": 100, "stress_desc": "压力增高", "gains_desc": "观测大幅提升, 常识提升", "stress": EFFECT_MAP["压力增高"], "gains": {"观测": EFFECT_MAP["大幅提升"], "常识": EFFECT_MAP["提升"]}},
+    {"name": "黑洞科普", "cost": 150, "stress_desc": "压力小幅降低", "gains_desc": "理论提升, 常识提升", "stress": EFFECT_MAP["压力小幅降低"], "gains": {"理论": EFFECT_MAP["提升"], "常识": EFFECT_MAP["提升"]}},
     
     # 新增训练
-    {"name": "户外生存", "cost": 500, "stress_desc": "压力降低", "gains_desc": "观测提升, 常识提升", "stress": EFFECT_MAP["降低"], "gains": {"观测": EFFECT_MAP["提升"], "常识": EFFECT_MAP["提升"]}},
-    {"name": "编程算法", "cost": 50, "stress_desc": "压力增高", "gains_desc": "实测大幅提升", "stress": EFFECT_MAP["增高"], "gains": {"实测": EFFECT_MAP["大幅提升"]}},
-    {"name": "哲学思辨", "cost": 0, "stress_desc": "压力小幅增高", "gains_desc": "理论轻微提升, 压力增高", "stress": EFFECT_MAP["小幅增高"], "gains": {"理论": EFFECT_MAP["轻微提升"]}},
-    {"name": "观看流星雨", "cost": 250, "stress_desc": "压力降低", "gains_desc": "观测轻微提升, 压力降低", "stress": EFFECT_MAP["降低"], "gains": {"观测": EFFECT_MAP["轻微提升"]}, "req_weather": ["晴朗", "少云"]},
+    {"name": "户外生存", "cost": 500, "stress_desc": "压力降低", "gains_desc": "观测提升, 常识提升", "stress": EFFECT_MAP["压力降低"], "gains": {"观测": EFFECT_MAP["提升"], "常识": EFFECT_MAP["提升"]}},
+    {"name": "编程算法", "cost": 50, "stress_desc": "压力大幅增高", "gains_desc": "实测大幅提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"实测": EFFECT_MAP["大幅提升"]}},
+    {"name": "哲学思辨", "cost": 0, "stress_desc": "压力小幅增高", "gains_desc": "理论轻微提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"理论": EFFECT_MAP["轻微提升"]}},
+    {"name": "观看流星雨", "cost": 400, "stress_desc": "压力降低", "gains_desc": "观测提升", "stress": EFFECT_MAP["压力降低"], "gains": {"观测": EFFECT_MAP["提升"]}, "req_weather": ["晴朗", "少云"]},
 ]
 NUM_WEEKLY_OPTIONS = 5
 
@@ -116,51 +133,53 @@ class Trait:
         self.desc = desc
         self.effect_func = effect_func
 
-# 定义具体天赋效果 
-def effect_furry(student):
-    student.attrs["常识"] += 15
-    student.stress_scale *= 1.2
-def effect_cloud_cult(student):
-    student.attrs["理论"] += 5
-def effect_photo_expert(student):
-    student.attrs["观测"] = max(student.attrs["观测"], 60)
-    student.learning_rates["实测"] *= 0.8
-def effect_rich(student):
-    student.stress_scale *= 0.8 # 抗压能力强
-def effect_glass_heart(student):
-    student.stress_scale *= 1.5 # 压力敏感度高
-    student.learning_rates["理论"] *= 1.3
-def effect_sleepy(student):
-    student.stress_scale *= 0.7 # 抗压能力强
-    student.learning_rates["理论"] *= 0.8
-    student.learning_rates["观测"] *= 0.8
-def effect_theory_genius(student): 
-    student.attrs["理论"] = max(student.attrs["理论"], 60)
-    student.learning_rates["理论"] *= 1.3
-
 TRAIT_POOL = [
-    Trait("Furry", "对毛茸茸的东西没有抵抗力，常识较高，易分心（压力敏感度略高）。", effect_furry),
-    Trait("阴天教徒", "所到之处，云量增加（小幅增加阴天概率）。", effect_cloud_cult),
-    Trait("天文摄影砖家", "器材党，初始观测能力强，但不爱处理数据（实测学习效率降低）。", effect_photo_expert),
-    Trait("富二代", "家里有矿，抗压能力强。", effect_rich),
-    Trait("玻璃心", "非常敏感，容易退社，但理论学习能力强。", effect_glass_heart),
-    Trait("民科体质", "总能提出惊世骇俗的理论，常识学习慢。", lambda s: s.learning_rates.update({"常识": s.learning_rates["常识"] * 0.5})), 
-    Trait("肝帝", "每晚只睡4小时，所有学习效率微升。", lambda s: [s.learning_rates.update({k: v*1.1}) for k,v in s.learning_rates.items()]),
-    Trait("欧皇", "考试运气极好（正向随机波动更大）。", None), 
-    Trait("非酋", "考试运气极差（负向随机波动更大）。", None),
-    
-    Trait("理论天才", "痴迷理论推导，初始理论能力强，学习效率高。", effect_theory_genius),
-    Trait("性向独特", "这名学生的性取向有一点……怪。", None), 
-    Trait("嗜睡体质", "每天需要睡够10小时，抗压能力强，但训练效率普遍降低。", effect_sleepy),
+    Trait("Furry", "对毛茸茸的东西没有抵抗力，常识较高，压力敏感度略高。", 
+          lambda student: (student.attrs.__setitem__("常识", student.attrs["常识"] + 15),
+                           student.__setattr__('stress_scale', student.stress_scale * 1.2))),
+    Trait("阴天教徒", "所到之处，云量增加（小幅增加阴天概率）。", 
+          lambda student: None), 
+    Trait("天文摄影砖家", "器材党，初始观测能力强，但不爱处理数据（实测学习效率降低）。", 
+          lambda student: (student.attrs.__setitem__("观测", max(student.attrs["观测"], 60)),
+                           student.learning_rates.__setitem__("实测", student.learning_rates["实测"] * 0.8))),
+    Trait("富二代", "家里有矿，性格开朗抗压能力强。", 
+          lambda student: student.__setattr__('stress_scale', student.stress_scale * 0.8)),
+    Trait("玻璃心", "非常敏感，容易退社，但理论学习能力强。", 
+          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 1.5),
+                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.3))),
+    Trait("民科体质", "总能提出惊世骇俗的理论，常识学习慢。", 
+          lambda student: student.learning_rates.__setitem__("常识", student.learning_rates["常识"] * 0.5)), 
+    Trait("肝帝", "每晚只睡4小时，所有学习效率微升。", 
+          lambda student: [student.learning_rates.update({k: v*1.1}) for k,v in student.learning_rates.items()]),
+    Trait("欧皇", "考试运气极好（正向随机波动更大）。", 
+          None), 
+    Trait("非酋", "考试运气极差（负向随机波动更大）。", 
+          None),
+    Trait("理论天才", "痴迷理论推导，初始理论能力强，学习效率高。", 
+          lambda student: (student.attrs.__setitem__("理论", max(student.attrs["理论"], 60)),
+                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.3))),
+    Trait("性向独特", "这名学生的性取向有一点……怪。", 
+          None), 
+    Trait("嗜睡体质", "每天需要睡够10小时，抗压能力强，但训练效率普遍降低。", 
+          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 0.7),
+                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 0.8),
+                           student.learning_rates.__setitem__("观测", student.learning_rates["观测"] * 0.8))),
     Trait("数据分析师", "痴迷于三维建模，初始实测能力高，理论学习效率略有提升。", 
-          lambda s: (s.attrs.__setitem__("实测", max(s.attrs["实测"], 50)), s.learning_rates.__setitem__("理论", s.learning_rates["理论"]*1.1))),
-    Trait("口胡大师", "常识储备惊人，但一到考试就发挥失常。", lambda s: s.attrs.__setitem__("常识", max(s.attrs["常识"], 55))),
-    Trait("女装控", "喜欢男扮女装，社团气氛活跃（压力敏感度略低）。", lambda s: s.__setattr__('stress_scale', s.stress_scale * 0.9)), 
-    Trait("星际公民", "相信外星生命存在，理论学习效率略高。", lambda s: s.learning_rates.__setitem__("理论", s.learning_rates["理论"] * 1.1)),
-    Trait("近视眼", "观测能力初始值低，但对理论/实测影响不大。", lambda s: s.attrs.__setitem__("观测", min(s.attrs["观测"], 15))),
-    Trait("社牛", "社交达人，比赛期间的社交活动效果加倍。", None), 
+          lambda student: (student.attrs.__setitem__("实测", max(student.attrs["实测"], 50)), 
+                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.1))),
+    Trait("口胡大师", "常识储备惊人，但一到考试就发挥失常。", 
+          lambda student: student.attrs.__setitem__("常识", max(student.attrs["常识"], 55))),
+    Trait("女装控", "喜欢男扮女装，社团气氛活跃（压力敏感度略低）。", 
+          lambda student: student.__setattr__('stress_scale', student.stress_scale * 0.9)), 
+    Trait("星际公民", "相信外星生命存在，理论学习效率略高。", 
+          lambda student: student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.1)),
+    Trait("近视眼", "观测能力初始值低，但对理论/实测影响不大。", 
+          lambda student: student.attrs.__setitem__("观测", min(student.attrs["观测"], 15))),
+    Trait("社牛", "社交达人，比赛期间的社交活动效果加倍。", 
+          None), 
     Trait("宅属性", "抗压能力强（宅家习惯），但常识学习慢。", 
-          lambda s: (s.__setattr__('stress_scale', s.stress_scale * 0.8), s.learning_rates.__setitem__("常识", s.learning_rates["常识"]*0.8))), 
+          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 0.8), 
+                           student.learning_rates.__setitem__("常识", student.learning_rates["常识"] * 0.8))), 
 ]
 
 # ==========================================
@@ -302,7 +321,7 @@ class Game:
     
     def generate_weather(self):
         """生成本周天气，考虑阴天教徒的影响"""
-        weights = [30, 25, 20, 15, 8, 2] 
+        weights = [30, 27, 20, 15, 8] 
         
         # 检查是否有阴天教徒，如果有则增加阴天的概率权重
         cloud_cultists = sum(1 for s in self.students if "阴天教徒" in [t.name for t in s.traits] and s.status == "在社")
@@ -429,6 +448,11 @@ class Game:
                 self.year += 1
                 self.new_year_processing()
 
+    def new_year_processing(self):
+        for s in self.students:
+                if s.status == "在社":
+                    s.honor = ""
+
     def action_menu(self):
         """处理用户选择训练活动"""
         print(f"\n{Fore.GREEN}--- 【本周活动安排】 ---{Style.RESET_ALL}")
@@ -493,54 +517,68 @@ class Game:
     def check_random_events(self):
         """检查并执行随机事件"""
         events = [
-            (0.05, f"有社员偷偷浏览P站被教导主任发现，全员写检讨。", 
-             lambda: [s.apply_stress(EFFECT_MAP["增高"] * 1.5) for s in self.students if s.status == "在社"]),
-            (0.05, f"民科组织入侵社团活动室，宣扬“地球是平的”，大家血压飙升，常识值小幅下降。", 
-             (lambda: [s.apply_stress(EFFECT_MAP["大幅增高"]) for s in self.students if s.status == "在社"], 
-              lambda: [s.train({"常识": -3}) for s in self.students if s.status == "在社"])), # 使用元组存储多个函数
+            (0.04, f"有社员偷偷浏览P站被教导主任发现, 全员写检讨。",
+            lambda: [s.apply_stress(EFFECT_MAP["压力增高"]) for s in self.students if s.status == "在社"]),
+            (0.03, f"民科组织入侵社团活动室，宣扬“地球是平的”，大家血压飙升，常识值小幅下降。",
+            (lambda: [s.apply_stress(EFFECT_MAP["压力大幅增高"]) for s in self.students if s.status == "在社"],
+            lambda: [s.train({"常识": EFFECT_MAP["小幅下降"]}) for s in self.students if s.status == "在社"])), # 使用元组存储多个函数
             (0.03, f"【鱼雷入侵】某人的视频被反复播放，学生普遍感到恶心，观测、实测、常识大幅下降，压力大幅增高！",
-             (lambda: [s.apply_stress(EFFECT_MAP["大幅增高"] * 2) for s in self.students if s.status == "在社"], 
-              lambda: [s.train({"常识": -5, "观测": -5, "实测": -5}) for s in self.students if s.status == "在社"])),
-            (0.04, f"【对家直播】对家机构马鸣溪天文正在直播，社员被分散注意力，常识轻微下降，压力小幅增高。",
-             (lambda: [s.apply_stress(EFFECT_MAP["小幅增高"]) for s in self.students if s.status == "在社"], 
-              lambda: [s.train({"常识": -1}) for s in self.students if s.status == "在社"])),
-            
-            (0.02, f"富二代社员请客，资金+{Fore.YELLOW}1000{Style.RESET_ALL}元。", 
-             lambda: self.adjust_money(1000) if any(t.name == "富二代" for s in self.students for t in s.traits) else None),
-            
-            (0.03, f"某位社员穿着女装来训练，士气大振，压力大幅降低！", 
-             lambda: [s.apply_stress(EFFECT_MAP["大幅降低"]) for s in self.students if s.status == "在社"]),
-            (0.04, f"天文摄影砖家发现新的星云，大家观测能力小幅提升。",
-             lambda: [s.train({"观测": EFFECT_MAP["小幅提升"]}) for s in self.students if "天文摄影砖家" in [t.name for t in s.traits] and s.status == "在社"]),
-            (0.03, f"食堂推出了“星空特饮”（难喝的深蓝色液体），大家压力小幅增高。", 
-             lambda: [s.apply_stress(EFFECT_MAP["小幅增高"]) for s in self.students if s.status == "在社"]),
-            (0.05, f"遭遇连续阴雨天，心情低落。", 
-             lambda: [s.apply_stress(EFFECT_MAP["小幅增高"]) for s in self.students if s.status == "在社"] if self.weather in ["阴天", "大雨"] else None),
-            (0.02, f"社团望远镜被体育生当哑铃举，损坏维修需{Fore.RED}500{Style.RESET_ALL}元。", 
-             lambda: self.adjust_money(-500)),
-             (0.04, f"在漫展中，天文社摆摊算命赚了外快，资金+{Fore.YELLOW}300{Style.RESET_ALL}元。",
-             lambda: self.adjust_money(300)),
-             (0.03, f"全体社员被安利了Furry文化，常识值小幅下降。",
-             lambda: [s.train({"常识": -2}) for s in self.students if any(t.name == "Furry" for t in s.traits) and s.status == "在社"]),
-            (0.03, f"某社员在观测时发现 UFO，惊吓过度，压力增高。", lambda: [s.apply_stress(EFFECT_MAP["增高"]) for s in self.students if s.status == "在社"]),
-            (0.04, f"发现了一本天文学家的八卦杂志，大家常识小幅提升。", lambda: [s.train({"常识": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
-            (0.02, f"某社员误食了观测用的干燥剂，被迫送医，本周训练取消。", lambda: None), 
-            (0.04, f"黑客入侵校内网络，我们靠实测能力协助修复，资金+{Fore.YELLOW}500{Style.RESET_ALL}元。", lambda: self.adjust_money(500)),
-            (0.03, f"学校停电三天，大家只能进行理论学习，理论小幅提升。", lambda: [s.train({"理论": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
-            (0.02, f"社长迷上了占星术，社团活动经费被用来买水晶球，资金-{Fore.RED}300{Style.RESET_ALL}元。", lambda: self.adjust_money(-300)),
-            (0.05, f"高年级学长返校指导，压力降低。", lambda: [s.apply_stress(EFFECT_MAP["降低"]) for s in self.students if s.status == "在社"]),
-            (0.03, f"社员在学校表演了《星球大战》主题的宅舞，社团知名度提升，常识提升。", lambda: [s.train({"常识": EFFECT_MAP["提升"]}) for s in self.students if s.status == "在社"]),
-            (0.07, f"【无作业日】学校组织图书馆放松，压力大幅降低，常识轻微提升。",
-             (lambda: [s.apply_stress(EFFECT_MAP["大幅降低"]) for s in self.students if s.status == "在社"],
-              lambda: [s.train({"常识": EFFECT_MAP["轻微提升"]}) for s in self.students if s.status == "在社"])),
-              
-            (0.04, f"【心结打开】某位玻璃心社员突然想通，压力大幅降低，并开导他人。",
-             (lambda: [s.apply_stress(EFFECT_MAP["降低"]) for s in self.students if s.status == "在社"],
-              lambda: [s.apply_stress(EFFECT_MAP["大幅降低"]) for s in self.students if "玻璃心" in [t.name for t in s.traits] and s.status == "在社"])),
-              
-            (0.03, f"星图软件获得重大更新，使用体验极佳，实测小幅提升，压力小幅降低。",
-             (lambda: [s.train({"实测": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"],
-              lambda: [s.apply_stress(EFFECT_MAP["小幅降低"]) for s in self.students if s.status == "在社"])),
+            (lambda: [s.apply_stress(EFFECT_MAP["压力大幅增高"] ) for s in self.students if s.status == "在社"],
+            lambda: [s.train({"常识": EFFECT_MAP['大幅下降'], "观测": EFFECT_MAP['大幅下降'], "实测": EFFECT_MAP['大幅下降']}) for s in self.students if s.status == "在社"])),
+            (0.03, f"【对家直播】对家机构马鸣溪天文正在直播，社员被分散注意力，常识轻微下降，压力小幅增高。",
+            (lambda: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in self.students if s.status == "在社"],
+            lambda: [s.train({"理论": EFFECT_MAP['轻微下降'], "观测":EFFECT_MAP['轻微下降'], "实测":EFFECT_MAP['轻微下降']}) for s in self.students if s.status == "在社"])),
+            (0.02, f"富二代社员请客，资金+{Fore.YELLOW}1000{Style.RESET_ALL}元。",
+            lambda: self.adjust_money(1000) if any(t.name == "富二代" for s in self.students for t in s.traits) else None),
+            (0.03, f"某位社员穿着女装来训练，士气大振，压力大幅降低！",
+            lambda: [s.apply_stress(EFFECT_MAP["压力大幅降低"]) for s in self.students if s.status == "在社"]),
+            (0.01, f"天文摄影砖家拍摄到了黑洞照片，大家观测能力小幅提升。",
+            lambda: [s.train({"观测": EFFECT_MAP["小幅提升"]}) for s in self.students if "天文摄影砖家" in [t.name for t in s.traits] and s.status == "在社"]),
+            (0.02, f"食堂推出了“星空特饮”（难喝的深蓝色液体），大家压力小幅增高。",
+            lambda: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in self.students if s.status == "在社"]),
+            (0.04, f"遭遇连续阴雨天，心情低落，观测能力小幅下降。",
+            (lambda: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in self.students if s.status == "在社"] if self.weather in ["阴天", "大雨"] else None,
+            lambda: [s.train({"观测": EFFECT_MAP['小幅下降']}) for s in self.students if s.status == "在社"] if self.weather in ["阴天", "大雨"] else None)),
+            (0.02, f"社团望远镜被体育生当哑铃举，损坏维修需{Fore.RED}500{Style.RESET_ALL}元。",
+            lambda: self.adjust_money(-500)),
+            (0.02, f"在漫展中，天文社摆摊算命赚了外快，资金+{Fore.YELLOW}300{Style.RESET_ALL}元。",
+            lambda: self.adjust_money(300)),
+            (0.03, f"全体社员被安利了Furry文化, 大家沉迷于兽聚, 荒废学业, 导致常识和理论值小幅下降。",
+            lambda: [s.train({"常识": -1, "理论": -1}) for s in self.students if any(t.name == "Furry" for t in s.traits) and s.status == "在社"]),
+            (0.04, f"发现了一本天文学家的八卦杂志，大家常识小幅提升。",
+            lambda: [s.train({"常识": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
+            (0.02, f"某社员看太阳没有用巴德膜，被迫送医，索性无大碍。",
+            lambda: self.adjust_money(-500)),
+            (0.03, f"社团掀起了理论学习狂潮，理论小幅提升。",
+            lambda: [s.train({"理论": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
+            (0.02, f"社长迷上了占星术，社团活动经费被用来买水晶球，资金-{Fore.RED}300{Style.RESET_ALL}元。",
+            lambda: self.adjust_money(-300)),
+            (0.03, f"社员在学校表演了《星球大战》主题的宅舞，社团知名度提升，常识提升。",
+            lambda: [s.train({"常识": EFFECT_MAP["提升"]}) for s in self.students if s.status == "在社"]),
+            (0.08, f"【无作业日】压力降低。",
+            lambda: [s.apply_stress(EFFECT_MAP["压力降低"]) for s in self.students if s.status == "在社"]),
+            (0.03, f"【心结打开】某位玻璃心社员突然想通，压力大幅降低，并开导他人。",
+            (lambda: [s.apply_stress(EFFECT_MAP["压力降低"]) for s in self.students if s.status == "在社"],
+            lambda: [s.apply_stress(EFFECT_MAP["压力大幅降低"]) for s in self.students if "玻璃心" in [t.name for t in s.traits] and s.status == "在社"])),
+            (0.02, f"星图软件获得重大更新，使用体验极佳，实测小幅提升，压力小幅降低。",
+            (lambda: [s.train({"实测": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"],
+            lambda: [s.apply_stress(EFFECT_MAP["压力小幅降低"]) for s in self.students if s.status == "在社"])),
+            (0.01, f"社团成员们在观测后玩起了阿鲁巴，虽然身体很痛，但大家的关系更亲密了，压力大幅降低！",
+            lambda: [s.apply_stress(EFFECT_MAP["压力大幅降低"]) for s in self.students if s.status == "在社"]),
+            (0.02, f"【键政狂潮】几位社员在争论“星辰大海”的国际意义，虽然没有结果，但大家理论值小幅提升。",
+            lambda: [s.train({"理论": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
+            (0.02, f"某社员在天文社团里谈笑风生，分享了他AKIOI的经历，大家常识小幅提升，但压力增高。",
+            (lambda: [s.train({"常识": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"],
+            lambda: [s.apply_stress(EFFECT_MAP["压力增高"]) for s in self.students if s.status == "在社"])),
+            (0.01, f"【流星雨之夜】观测到罕见的流星雨爆发，全体社员实测和观测能力小幅提升，压力大幅降低！",
+            (lambda: [s.train({"实测": EFFECT_MAP["小幅提升"], "观测": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"],
+            lambda: [s.apply_stress(EFFECT_MAP["压力大幅降低"]) for s in self.students if s.status == "在社"])),
+            (0.01, f"天文社团日常在楼顶观测，被教导主任误以为是邪教活动，全员写检讨，压力大幅增高。",
+            lambda: [s.apply_stress(EFFECT_MAP["压力大幅增高"]) for s in self.students if s.status == "在社"]),
+            (0.02, f"社团吉祥物（一只玩偶，或许是熊？）被学生会没收，理由是“过于可爱”，大家心情低落，压力小幅增高。",
+            lambda: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in self.students if s.status == "在社"]),
+            (0.01, f"有社员在网络论坛上与“地平论”支持者激烈辩论，虽然很耗时间，但常识值小幅提升。",
+            lambda: [s.train({"常识": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
         ]
 
         for prob, desc, func in events:
@@ -647,12 +685,12 @@ class Game:
                 self.log("大家在酒店疯狂刷题...")
                 for s in students: 
                     s.train({"理论": EFFECT_MAP["小幅提升"]}, 1.0)
-                    s.apply_stress(EFFECT_MAP["小幅增高"])
+                    s.apply_stress(EFFECT_MAP["压力小幅增高"])
             elif choice == "2":
                 self.log("与其他学校的同学交流...")
                 for s in students:
                     s.train({"常识": EFFECT_MAP["小幅提升"]}, social_factor)
-                    s.apply_stress(EFFECT_MAP["小幅降低"] * social_factor)
+                    s.apply_stress(EFFECT_MAP["压力小幅降低"] * social_factor)
                 
                 event = random.choice([
                     "遇到了传说中的大佬，深受打击（压力增高）。", 
@@ -660,12 +698,12 @@ class Game:
                     "听说隔壁学校全员重感冒，暗自窃喜（压力降低）。"
                 ])
                 self.log(f"社交事件：{event}")
-                if "打击" in event: [s.apply_stress(EFFECT_MAP["小幅增高"]) for s in students]
-                if "愉悦" in event: [s.apply_stress(EFFECT_MAP["小幅降低"]) for s in students]
-                if "窃喜" in event: [s.apply_stress(EFFECT_MAP["小幅降低"]) for s in students]
+                if "打击" in event: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in students]
+                if "愉悦" in event: [s.apply_stress(EFFECT_MAP["压力小幅降低"]) for s in students]
+                if "窃喜" in event: [s.apply_stress(EFFECT_MAP["压力小幅降低"]) for s in students]
             elif choice == "3":
                 self.log("大家去吃了一顿好的...")
-                for s in students: s.apply_stress(EFFECT_MAP["大幅降低"])
+                for s in students: s.apply_stress(EFFECT_MAP["压力大幅降低"])
             elif choice == "4":
                 # 省赛和国决都有观测考试
                 if "省级" in contest_name or "国决" in contest_name:
@@ -673,7 +711,7 @@ class Game:
                     for s in students: s.train({"观测": EFFECT_MAP["小幅提升"]}, 1.0)
                 else:
                     self.log("今天没有观测项目，踩点没用，大家在寒风中白站了一小时。")
-                    for s in students: s.apply_stress(EFFECT_MAP["小幅增高"])
+                    for s in students: s.apply_stress(EFFECT_MAP["压力小幅增高"])
             
             press_enter()
 
@@ -702,7 +740,7 @@ class Game:
         required_attrs = {"理论": 0.3, "观测": 0.3, "实测": 0.3, "常识": 0.1}
         
         # 恶劣天气取消观测
-        if self.weather in ["阴天", "大雨", "暴雪"]:
+        if self.weather in ["阴天", "大雨"]:
             self.log(f"{Fore.YELLOW}省赛观测考试因天气 {self.weather} 取消！观测权重归零。{Style.RESET_ALL}")
             required_attrs["观测"] = 0
             
