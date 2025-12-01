@@ -480,9 +480,9 @@ class Game:
         
         choice = input("请选择指令 (1-{}): ".format(len(self.available_training)))
         
-        if choice not in menu_items:
-            self.log("指令无效，自动摸鱼。")
-            return
+        while choice not in menu_items:
+            print("指令无效，重新输入。")
+            choice = input("请选择指令 (1-{}): ".format(len(self.available_training)))
         
         plan = menu_items[choice]
         
@@ -895,7 +895,7 @@ def main():
     clear_screen()
     print_separator(Fore.MAGENTA + '*')
     print(GAME_TITLE)
-    print("【声明】本游戏纯属虚构，由AI生成。\n\n作者：@Luca\nLuogu：https://www.luogu.com.cn/user/62659\nGithub：https://github.com/YuanzeSun\n\n本项目代码仓库（获取最新更新，游戏相关介绍等）：https://github.com/YuanzeSun/Astro_Chaos")
+    print("【声明】本游戏纯属虚构，由AI生成。\n\n作者：@Luca\nLuogu：https://www.luogu.com.cn/user/62659\nGithub：https://github.com/YuanzeSun\n\n本项目代码仓库（获取最新更新，游戏相关介绍）：https://github.com/YuanzeSun/Astro_Chaos")
     print_separator('*')
     print("按回车开始游戏...")
     input()
