@@ -315,7 +315,7 @@ class Game:
 
     def log(self, msg):
         """添加游戏日志"""
-        self.logs.append(f"[{Fore.CYAN}第{self.year}年 {MONTHS[self.month_idx]}月 第{self.week}{Style.RESET_ALL}周] {msg}")
+        self.logs.append(f"[{Fore.CYAN}第{self.year}年 {MONTHS[self.month_idx]}月 第{self.week}周{Style.RESET_ALL}] {msg}")
         if len(self.logs) > 10:
             self.logs.pop(0) # 保持日志数量不超过 10 条
     
