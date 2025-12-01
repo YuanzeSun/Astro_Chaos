@@ -589,7 +589,7 @@ class Game:
             (0.01, f"有社员在网络论坛上与“地平论”支持者激烈辩论，虽然很耗时间，但天文常识值小幅提升。",
             lambda: [s.train({"天文常识": EFFECT_MAP["小幅提升"]}) for s in self.students if s.status == "在社"]),
             (0.01, f"【占星术的诱惑】一位社员沉迷于占星术，认为星座比科学更可靠。大家为此争论不休，常识小幅下降，但理论小幅上升，压力小幅增高。",
-            (lambda: [s.train({"常识": EFFECT_MAP['小幅下降'], "理论": EFFECT_MAP['小幅提升']}) for s in self.students if s.status == "在社"],
+            (lambda: [s.train({"天文常识": EFFECT_MAP['小幅下降'], "理论": EFFECT_MAP['小幅提升']}) for s in self.students if s.status == "在社"],
             lambda: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in self.students if s.status == "在社"])),
         ]
 
