@@ -501,7 +501,7 @@ class Game:
         
         # 晋级指标计算
         if cutoff_criteria < 1: # 百分比晋级
-            cutoff_index = int(len(scores) * cutoff_criteria)
+            cutoff_index = math.ceil(len(scores) * cutoff_criteria)
             cutoff_index = max(1, cutoff_index) 
         else: # 名额晋级
             cutoff_index = int(cutoff_criteria)
@@ -509,8 +509,21 @@ class Game:
         promoted = []
         for i, (s, score) in enumerate(scores):
             # 分数低于 40 无法晋级
-            is_promoted = (i < cutoff_index and score >= 50) if name == "CNAO 国决" else (i < cutoff_index and score >= 32)
+            if name == "CNAO 国决" or name == "IOAA 国际赛":
+                is_promoted = (i < cutoff_index and score >= 80)
+            else:
+                is_promoted = (i < cutoff_index and score >= 32)
             
+            if name == "CNAO 国决":
+                if score >= 70:
+                    self.log(f"选手 {s.name} 获得金牌！")
+                elif score >=60:
+                    self.log(f"选手 {s.name} 获得银牌！")
+                elif score >=50:
+                    self.log(f"选手 {s.name} 获得铜牌！")
+                else:
+                    self.log(f"选手 {s.name} 获得鼓励奖！")
+
             status_str = f"{Fore.GREEN}晋级{Style.RESET_ALL}" if is_promoted else f"{Fore.RED}淘汰{Style.RESET_ALL}"
             print(f"{s.name:<10} {score:.1f}      {status_str}")
             
@@ -521,7 +534,7 @@ class Game:
                 # 修正 B4: 确保荣誉标签能够被新的高级荣誉覆盖
                 if honor_level:
                     s.honor = honor_level 
-            else:
+            elif name != "CNAO 国决" and name != "IOAA 国际赛":
                 # 未晋级的队员大幅增加压力
                 s.apply_stress(EFFECT_MAP["淘汰增压"])
                 self.log(f"选手 {s.name} {Fore.RED}被淘汰{Style.RESET_ALL}，压力大幅增高！")
@@ -604,7 +617,7 @@ class Game:
         eligible_students = [s for s in self.students if s.status == "在社" and "市队" in s.honor]
         
         if not eligible_students:
-            self.log(f"{Fore.RED}无人获得市队荣誉，无法参加省赛。{Style.RESET_ALL}")
+            self.log(f"{Fore.RED}无人获得省赛资格。{Style.RESET_ALL}")
             return
             
         # 暂时将筛选后的学生列表设为 game.students，以适应 run_contest_logic 的内部实现
@@ -616,12 +629,12 @@ class Game:
         
         # 恶劣天气取消观测
         if self.weather in ["阴天", "大雨"]:
-            self.log(f"{Fore.YELLOW}省赛观测考试因天气 {self.weather} 取消！观测权重归零。{Style.RESET_ALL}")
-            required_attrs["观测"] = 0
+            self.log(f"{Fore.YELLOW}省赛观测考试因天气 {self.weather} 取消！。{Style.RESET_ALL}")
+            required_attrs = {"理论": 0.4, "观测": 0.1, "实测": 0.4, "天文常识": 0.1}
             
         promoted = self.run_contest_logic("省级复赛", 
                                           required_attrs, 
-                                          0.8, is_interactive=True, honor_level="省队") 
+                                          0.9, is_interactive=True, honor_level="省队") 
         self.log(f"省赛结束，{Fore.GREEN}{len(promoted)}{Style.RESET_ALL} 人入选省队。")
         
         # --- [START] 恢复 game.students 列表 ---
@@ -634,7 +647,7 @@ class Game:
         candidates = [s for s in self.students if s.status == "在社"]
         if not candidates: return
 
-        self.run_contest_logic("CNAO 国初", {"理论": 0.7, "天文常识": 0.3}, 4, honor_level="国初") 
+        self.run_contest_logic("CNAO 国初", {"理论": 0.4, "天文常识": 0.5, "观测": 0.1}, 4, honor_level="国初") 
 
     def run_national_final(self):
         """全国决赛（CNAO）"""
@@ -644,15 +657,21 @@ class Game:
         eligible_students = [s for s in self.students if s.status == "在社" and "国初" in s.honor]
         
         if not eligible_students:
-            self.log(f"{Fore.RED}无人获得国初荣誉，无法参加国决。{Style.RESET_ALL}")
+            self.log(f"{Fore.RED}无人获得国决资格。{Style.RESET_ALL}")
             return
             
         original_students = self.students
         self.students = eligible_students
         # --- [END] 增加国决参赛资格筛选 ---
+        required_attrs = {"理论": 0.4, "观测": 0.2, "实测": 0.4}
+        
+        # 恶劣天气取消观测
+        if self.weather in ["阴天", "大雨"]:
+            self.log(f"{Fore.YELLOW}观测考试因天气 {self.weather} 取消！。{Style.RESET_ALL}")
+            required_attrs = {"理论": 0.4, "观测": 0.1, "实测": 0.5}
         
         promoted = self.run_contest_logic("CNAO 国决", 
-                                          {"理论": 0.4, "观测": 0.3, "实测": 0.3}, 
+                                          required_attrs, 
                                           5, is_interactive=True, honor_level="国集")
         
         for s in promoted:
