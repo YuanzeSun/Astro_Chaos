@@ -358,7 +358,7 @@ class Game:
                 return
         if "req_attr" in plan:
             if not any(t.name == plan["req_attr"] for s in self.students for t in s.traits):
-                self.log(f"{Fore.YELLOW}无特性为 {plan["req_attr"]} 的学生 {plan['name']}！活动取消。{Style.RESET_ALL}")
+                self.log(f"{Fore.YELLOW}无特性为 {plan["req_attr"]} 的学生! {plan['name']}活动取消。{Style.RESET_ALL}")
                 time.sleep(1)
                 return
 
