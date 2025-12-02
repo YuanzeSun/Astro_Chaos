@@ -90,4 +90,4 @@ python main.py
 
 但需保留原作者（本人）信息
 
-如有任何建议和bug反馈，请在https://docs.qq.com/doc/DRVRqRE1EbXVQeWNj上进行反馈，欢迎！
+如有任何建议和bug反馈，请在https://docs.qq.com/doc/DRVRqRE1EbXVQeWNj 上进行反馈，欢迎！
