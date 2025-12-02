@@ -295,6 +295,7 @@ class Game:
             if self.month_idx >= 12:
                 self.month_idx = 0
                 self.year += 1
+            if self.month_idx == 1 and self.week ==1:
                 self.new_year_processing()
 
     def new_year_processing(self):
@@ -315,15 +316,17 @@ class Game:
             cost = plan.get('cost', 0)
             cost_str = f"成本: {cost:>4}元" if cost > 0 else "免费      "
             
-            weather_req = f" [需天气: {', '.join(plan['req_weather'])}]" if 'req_weather' in plan else ""
-            
             # 采用更宽的占位符来容纳中文，并使用制表符 '\t' 辅助对齐
             # 注意：在某些终端，纯粹的 ljust 仍可能不完美，但这是最简单的修正
             print(
                 f"{index}. {plan['name']:<6}\t | {cost_str:8}\t | "
                 f"压力: {plan['stress_desc']:<8}\t | "
-                f"收益: {plan['gains_desc']:<25}{weather_req}"
+                f"收益: {plan['gains_desc']:<25}"
             )
+            if 'req_weather' in plan:
+                print(f"---- 需天气：{', '.join(plan['req_weather'])}")
+            if 'req_attr' in plan:
+                print(f"---- 需{plan['req_attr']}")
             
             menu_items[index] = plan
         
@@ -351,6 +354,11 @@ class Game:
         if "req_weather" in plan:
             if self.weather not in plan["req_weather"]:
                 self.log(f"{Fore.YELLOW}天气 {self.weather} 不适合进行 {plan['name']}！活动取消。{Style.RESET_ALL}")
+                time.sleep(1)
+                return
+        if "req_attr" in plan:
+            if not any(t.name == plan["req_attr"] for s in self.students for t in s.traits):
+                self.log(f"{Fore.YELLOW}无特性为 {plan["req_attr"]} 的学生 {plan['name']}！活动取消。{Style.RESET_ALL}")
                 time.sleep(1)
                 return
 
@@ -477,7 +485,7 @@ class Game:
 
         # 比赛前的互动环节（用于省赛和国决）
         if is_interactive:
-            days = 2 if "省级" in name else 5
+            days = 1 if "省级" in name else 3
             self.interactive_session(name, active_students, days=days)
 
         results = []
@@ -501,12 +509,12 @@ class Game:
         promoted = []
         for i, (s, score) in enumerate(scores):
             # 分数低于 40 无法晋级
-            is_promoted = i < cutoff_index and score >= 32
+            is_promoted = (i < cutoff_index and score >= 50) if name == "CNAO 国决" else (i < cutoff_index and score >= 32)
             
             status_str = f"{Fore.GREEN}晋级{Style.RESET_ALL}" if is_promoted else f"{Fore.RED}淘汰{Style.RESET_ALL}"
             print(f"{s.name:<10} {score:.1f}      {status_str}")
             
-            s.apply_stress(15) # 比赛本身带来的压力
+            s.apply_stress(10) # 比赛本身带来的压力
             
             if is_promoted:
                 promoted.append(s)
@@ -626,7 +634,7 @@ class Game:
         candidates = [s for s in self.students if s.status == "在社"]
         if not candidates: return
 
-        self.run_contest_logic("CNAO 国初", {"理论": 0.7, "天文常识": 0.3}, 0.2, honor_level="国初") 
+        self.run_contest_logic("CNAO 国初", {"理论": 0.7, "天文常识": 0.3}, 4, honor_level="国初") 
 
     def run_national_final(self):
         """全国决赛（CNAO）"""
@@ -750,7 +758,7 @@ def main():
     clear_screen()
     print_separator(Fore.MAGENTA + '*')
     print(GAME_TITLE)
-    print("【声明】本游戏纯属虚构，由AI生成。\n\n作者：@Luca\nLuogu：https://www.luogu.com.cn/user/62659\nGithub：https://github.com/YuanzeSun\n\n本项目代码仓库（获取最新更新，游戏相关介绍）：https://github.com/YuanzeSun/Astro_Chaos")
+    print("【声明】本游戏纯属虚构，由AI辅助生成。\n\n作者：@Luca\nLuogu：https://www.luogu.com.cn/user/62659\nGithub：https://github.com/YuanzeSun\n\n本项目代码仓库（获取最新更新，游戏相关介绍）：https://github.com/YuanzeSun/Astro_Chaos")
     print_separator('*')
     print("按回车开始游戏...")
     input()
@@ -1275,7 +1283,7 @@ def action_meteorite_identification(game, students):
             msg = Fore.GREEN + f"实测+3！你成功鉴别出这块石头是含镍铁陨石（或铁矿石）！"
         else:
             apply_effect_to_all_active(students, "实测", "轻微下降")
-            msg = Fore.YELLOW + "你被割伤了手，无法确定真伪。实测{Fore.RED}轻微下降{Style.RESET_ALL}。"
+            msg = Fore.YELLOW + "你被割伤了手，无法确定真伪。实测轻微下降。"
     
     elif choice1 == "B":
         print("对方被你问得语塞，你回忆起了不同元素燃烧产生的颜色常识。")
@@ -1303,7 +1311,7 @@ def action_planetarium_date(game, students):
             msg = Fore.GREEN + f"观测+3！成功校准坐标系，定位了南半球天体！"
         else:
             apply_effect_to_all_active(students, "观测", "小幅下降")
-            msg = Fore.RED + "你被投影仪的噪音吸引了工作人员，被迫逃跑。观测{Fore.RED}小幅下降{Style.RESET_ALL}。"
+            msg = Fore.RED + "你被投影仪的噪音吸引了工作人员，被迫逃跑。观测小幅下降。"
     
     elif choice1 == "B":
         print("银心区域的常识性知识点非常多。")
