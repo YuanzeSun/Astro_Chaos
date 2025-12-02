@@ -89,3 +89,5 @@ python main.py
 欢迎对本项目进行二次开发和修改，或对本项目提出issue和pull request
 
 但需保留原作者（本人）信息
+
+如有任何建议和bug反馈，请在https://docs.qq.com/doc/DRVRqRE1EbXVQeWNj上进行反馈，欢迎！
