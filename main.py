@@ -3,6 +3,8 @@ import time
 import os
 import sys
 import math
+from data import GAME_TITLE, WEATHERS, ATTRS, MONTHS, WEEKS_PER_MONTH, MAX_YEARS, MONTHLY_FUNDS, NUM_WEEKLY_OPTIONS
+from data import SURNAMES, NAMES, EFFECT_MAP, GRADE_MAP, FULL_TRAINING_POOL, TRAIT_POOL
 
 try:
     # 尝试导入 colorama 库用于颜色显示
@@ -15,28 +17,6 @@ except ImportError:
         def __getattr__(self, name): return ""
     Fore = Style = MockColor()
     
-# ==========================================
-# 配置与常量定义
-# ==========================================
-
-GAME_TITLE = "天文闹赛 (Astronomy Chaos Competition)"
-
-# 时间设定
-MONTHS = [8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7]
-WEEKS_PER_MONTH = 4
-MAX_YEARS = 3
-MONTHLY_FUNDS = 500 # 每月固定经费
-
-# 属性维度
-ATTRS = ["理论", "观测", "实测", "天文常识"]
-
-# 评级阈值
-GRADE_MAP = {
-    95: "S+", 90: "S", 85: "A+", 80: "A", 75: "B+", 70: "B", 
-    65: "B-", 60: "C+", 55: "C", 50: "C-", 45: "D+", 40: "D", 
-    30: "D-", 20: "E", 0: "F"
-}
-
 # 颜色函数 (不变)
 def get_grade_color(grade_str):
     if grade_str.startswith('S') or grade_str.startswith('A'): return Fore.GREEN
@@ -48,139 +28,6 @@ def get_stress_color(stress_value):
     if stress_value > 80: return Fore.RED + Style.BRIGHT
     if stress_value > 50: return Fore.YELLOW
     return Fore.GREEN
-
-# 训练影响级别描述与对应数值
-EFFECT_MAP = {
-    # 提升/降低数值
-    "大幅提升": 4.0,  
-    "提升": 3.0,      
-    "小幅提升": 1.5,   
-    "轻微提升": 1.0,   
-
-    "大幅下降": 4.0,  
-    "下降": 3.0,      
-    "小幅下降": 1,
-    "轻微下降": 0.5,
-
-    # 压力数值 
-    "压力大幅增高": 15.0,  
-    "压力增高": 8.0,     
-    "压力小幅增高": 3.0,   
-    "压力大幅降低": -15.0, "压力降低": -8.0, "压力小幅降低": -3.0,
-    # 淘汰惩罚
-    "淘汰增压": 15.0,
-}
-
-# 天气 (不变)
-WEATHERS = ["晴朗", "少云", "多云", "阴天", "大雨"]
-
-# 名字库 (不变)
-SURNAMES = [
-    "张", "王", "李", "赵", "刘", "陈", "杨", "黄", "吴", "徐", "孙", "马", "朱",
-    "胡", "林", "郭", "何", "高", "罗", "郑", "梁", "谢", "宋", "唐", "许",
-    "邓", "冯", "曹", "彭", "曾", "肖", "田", "董", "潘", "袁", "于", "蒋",
-    "蔡", "余", "杜", "叶", "范", "韩", "金", "邱", "姜", "覃"
-]
-NAMES = [
-    "子涵", "梓涵", "思源", "嘉琪", "浩然", "子瑜", "语晨", "雨泽", "若溪", "俊熙",
-    "睿航", "思睿", "奕辰", "晨曦", "书瑶", "依诺", "芷若", "欣怡", "诗琪", "浩宇",
-    "怡然", "昕悦", "嘉懿", "沐阳", "一航", "子墨", "梓萱", "靖雯", "若楠", "星辰",
-    "明轩", "皓轩", "嘉豪", "芷宁", "雅涵", "之恒", "瑞宁", "泽楷", "子睿", "钰琪",
-    "晨悦", "若彤", "思辰", "梓逸", "绍涵", "煜城", "沐辰", "凌云", "嘉禾", "乐瑶"
-]
-
-
-# ==========================================
-# 训练池 
-# ==========================================
-
-FULL_TRAINING_POOL = [
-    # 核心训练 
-    {"name": "模拟笔试", "cost": 100, "stress_desc": "压力增高", "gains_desc": "理论提升, 实测小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"理论": EFFECT_MAP["提升"], "实测": EFFECT_MAP["小幅提升"]}},
-    {"name": "竞赛真题", "cost": 50, "stress_desc": "压力大幅增高", "gains_desc": "理论大幅提升, 天文常识小幅提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"理论": EFFECT_MAP["大幅提升"], "天文常识": EFFECT_MAP["小幅提升"]}},
-    {"name": "外出观测", "cost": 400, "stress_desc": "压力小幅增高", "gains_desc": "观测大幅提升, 实测小幅提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"观测": EFFECT_MAP["大幅提升"], "实测": EFFECT_MAP["小幅提升"]}, "req_weather": ["晴朗", "少云"]},
-    {"name": "数据处理", "cost": 150, "stress_desc": "压力增高", "gains_desc": "实测提升, 理论轻微提升", "stress": EFFECT_MAP["压力增高"], "gains": {"实测": EFFECT_MAP["提升"], "理论": EFFECT_MAP["轻微提升"]}},
-    {"name": "常识讲座", "cost": 200, "stress_desc": "压力小幅降低", "gains_desc": "天文常识大幅提升, 理论轻微提升", "stress": EFFECT_MAP["压力小幅降低"], "gains": {"天文常识": EFFECT_MAP["大幅提升"], "理论": EFFECT_MAP["轻微提升"]}},
-    
-    # 减压/赚钱 
-    {"name": "专业按摩", "cost": 800, "stress_desc": "压力大幅降低", "gains_desc": "天文常识轻微提升", "stress": EFFECT_MAP["压力大幅降低"], "gains": {"天文常识": EFFECT_MAP["轻微提升"]}}, 
-    {"name": "社团接单", "cost": 0, "stress_desc": "压力增高", "gains_desc": "实测轻微提升", "stress": EFFECT_MAP["压力增高"], "gains": {"实测": EFFECT_MAP["轻微提升"]}, "money_gain": 400}, 
-    {"name": "科教片放松", "cost": 200, "stress_desc": "压力降低", "gains_desc": "天文常识大幅提升", "stress": EFFECT_MAP["压力降低"], "gains": {"天文常识": EFFECT_MAP["大幅提升"]}},
-    
-    # 综合训练
-    {"name": "跨学科研讨", "cost": 0, "stress_desc": "压力增高", "gains_desc": "理论小幅提升, 实测小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"理论": EFFECT_MAP["小幅提升"], "实测": EFFECT_MAP["小幅提升"]}},
-    {"name": "撰写科普文", "cost": 0, "stress_desc": "压力增高", "gains_desc": "天文常识提升, 理论小幅提升", "stress": EFFECT_MAP["压力增高"], "gains": {"天文常识": EFFECT_MAP["提升"], "理论": EFFECT_MAP["小幅提升"]}},
-    {"name": "寻找新星", "cost": 500, "stress_desc": "压力小幅增高", "gains_desc": "观测提升, 实测提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"观测": EFFECT_MAP["提升"], "实测": EFFECT_MAP["提升"]}, "req_weather": ["晴朗", "少云"]},
-    {"name": "计算轨道", "cost": 100, "stress_desc": "压力大幅增高", "gains_desc": "实测大幅提升, 理论提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"实测": EFFECT_MAP["大幅提升"], "理论": EFFECT_MAP["提升"]}},
-    {"name": "星图识别训练", "cost": 100, "stress_desc": "压力增高", "gains_desc": "观测大幅提升, 天文常识提升", "stress": EFFECT_MAP["压力增高"], "gains": {"观测": EFFECT_MAP["大幅提升"], "天文常识": EFFECT_MAP["提升"]}},
-    {"name": "黑洞科普", "cost": 150, "stress_desc": "压力小幅降低", "gains_desc": "理论提升, 天文常识提升", "stress": EFFECT_MAP["压力小幅降低"], "gains": {"理论": EFFECT_MAP["提升"], "天文常识": EFFECT_MAP["提升"]}},
-    
-    # 新增训练
-    {"name": "户外生存", "cost": 500, "stress_desc": "压力降低", "gains_desc": "观测提升, 天文常识提升", "stress": EFFECT_MAP["压力降低"], "gains": {"观测": EFFECT_MAP["提升"], "天文常识": EFFECT_MAP["提升"]}},
-    {"name": "编程算法", "cost": 50, "stress_desc": "压力大幅增高", "gains_desc": "实测大幅提升", "stress": EFFECT_MAP["压力大幅增高"], "gains": {"实测": EFFECT_MAP["大幅提升"]}},
-    {"name": "哲学思辨", "cost": 0, "stress_desc": "压力小幅增高", "gains_desc": "理论轻微提升", "stress": EFFECT_MAP["压力小幅增高"], "gains": {"理论": EFFECT_MAP["轻微提升"]}},
-    {"name": "观看流星雨", "cost": 400, "stress_desc": "压力降低", "gains_desc": "观测提升", "stress": EFFECT_MAP["压力降低"], "gains": {"观测": EFFECT_MAP["提升"]}, "req_weather": ["晴朗", "少云"]},
-]
-NUM_WEEKLY_OPTIONS = 5
-
-# ==========================================
-# 天赋池 
-# ==========================================
-
-class Trait:
-    def __init__(self, name, desc, effect_func=None):
-        self.name = name
-        self.desc = desc
-        self.effect_func = effect_func
-
-TRAIT_POOL = [
-    Trait("Furry", "对毛茸茸的东西没有抵抗力，天文常识较高，压力敏感度略高。", 
-          lambda student: (student.attrs.__setitem__("天文常识", student.attrs["天文常识"] + 15),
-                           student.__setattr__('stress_scale', student.stress_scale * 1.2))),
-    Trait("阴天教徒", "所到之处，云量增加（小幅增加阴天概率）。", 
-          lambda student: None), 
-    Trait("天文摄影砖家", "器材党，初始观测能力强，但不爱处理数据（实测学习效率降低）。", 
-          lambda student: (student.attrs.__setitem__("观测", max(student.attrs["观测"], 60)),
-                           student.learning_rates.__setitem__("实测", student.learning_rates["实测"] * 0.8))),
-    Trait("富二代", "家里有矿，性格开朗抗压能力强。", 
-          lambda student: student.__setattr__('stress_scale', student.stress_scale * 0.8)),
-    Trait("玻璃心", "非常敏感，容易退社，但理论学习能力强。", 
-          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 1.5),
-                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.3))),
-    Trait("民科体质", "总能提出惊世骇俗的理论，天文常识学习慢。", 
-          lambda student: student.learning_rates.__setitem__("天文常识", student.learning_rates["天文常识"] * 0.5)), 
-    Trait("肝帝", "每晚只睡4小时，所有学习效率微升。", 
-          lambda student: [student.learning_rates.update({k: v*1.1}) for k,v in student.learning_rates.items()]),
-    Trait("欧皇", "考试运气极好（正向随机波动更大）。", 
-          None), 
-    Trait("非酋", "考试运气极差（负向随机波动更大）。", 
-          None),
-    Trait("理论天才", "痴迷理论推导，初始理论能力强，学习效率高。", 
-          lambda student: (student.attrs.__setitem__("理论", max(student.attrs["理论"], 60)),
-                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.3))),
-    Trait("性向独特", "这名学生的性取向有一点……怪。", 
-          None), 
-    Trait("嗜睡体质", "每天需要睡够10小时，抗压能力强，但训练效率普遍降低。", 
-          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 0.7),
-                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 0.8),
-                           student.learning_rates.__setitem__("观测", student.learning_rates["观测"] * 0.8))),
-    Trait("数据分析师", "痴迷于三维建模，初始实测能力高，理论学习效率略有提升。", 
-          lambda student: (student.attrs.__setitem__("实测", max(student.attrs["实测"], 50)), 
-                           student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.1))),
-    Trait("口胡大师", "天文常识储备惊人，但一到考试就发挥失常。", 
-          lambda student: student.attrs.__setitem__("天文常识", max(student.attrs["天文常识"], 55))),
-    Trait("女装控", "喜欢男扮女装，社团气氛活跃（压力敏感度略低）。", 
-          lambda student: student.__setattr__('stress_scale', student.stress_scale * 0.9)), 
-    Trait("星际公民", "相信外星生命存在，理论学习效率略高。", 
-          lambda student: student.learning_rates.__setitem__("理论", student.learning_rates["理论"] * 1.1)),
-    Trait("近视眼", "观测能力初始值低，但对理论/实测影响不大。", 
-          lambda student: student.attrs.__setitem__("观测", min(student.attrs["观测"], 15))),
-    Trait("社牛", "社交达人，比赛期间的社交活动效果加倍。", 
-          None), 
-    Trait("宅属性", "抗压能力强（宅家习惯），但天文常识学习慢。", 
-          lambda student: (student.__setattr__('stress_scale', student.stress_scale * 0.8), 
-                           student.learning_rates.__setitem__("天文常识", student.learning_rates["天文常识"] * 0.8))), 
-]
 
 # ==========================================
 # 辅助函数 
@@ -214,6 +61,7 @@ class Student:
         self.name = f"{random.choice(SURNAMES)}{random.choice(NAMES)}"
         # 初始属性随机化
         self.attrs = {k: random.uniform(10, 30) for k in ATTRS}
+        self.temp_attrs = {k: 0 for k in ATTRS}
         # 初始学习效率随机化
         self.learning_rates = {k: random.uniform(0.8, 1.2) for k in ATTRS}
         self.stress = random.uniform(5, 20)
@@ -257,7 +105,8 @@ class Student:
         if total_weight == 0:
             return 0 
 
-        base_score = sum(self.attrs.get(attr, 0) * weight for attr, weight in attr_weights.items())
+        base_score = sum((self.attrs.get(attr, 0) + self.temp_attrs.get(attr, 0)) * weight 
+                                for attr, weight in attr_weights.items()) 
         base_score /= total_weight
         
         # 应用特性影响 (欧皇/非酋)
@@ -334,12 +183,12 @@ class Game:
         """游戏开始时的学生招募和初始设置"""
         clear_screen()
         print_separator()
-        print("欢迎来到【天文闹赛】！作为指导老师，你需要选拔一批高一新生。")
+        print("欢迎来到【天文闹赛】！作为优秀指导老师，你现在需要选（骗）拔（到）一批高一新生。")
         try:
             count = int(input("请输入你想招募的学生数量 (1-10): "))
             count = max(1, min(10, count))
         except:
-            count = 4
+            count = 5
         
         for _ in range(count):
             s = Student()
@@ -676,56 +525,62 @@ class Game:
     def interactive_session(self, contest_name, students, days):
         """比赛期间的互动环节，让玩家决定当日的策略"""
         for day in range(1, days + 1):
-            clear_screen()
-            print(f"--- {contest_name} 第 {day}/{days} 天 ---")
-            print("你可以安排今天的活动：")
-            print("1. 考前突击 (理论提升，压力增高)")
-            print("2. 考场社交 (天文常识提升，压力小幅降低，可能触发事件)")
-            print("3. 考前放松 (压力大幅降低)")
-            print("4. 勘测考场 (仅限观测日，观测小幅提升)")
-            
-            choice = input("请选择活动 (1-4): ")
-            
-            social_factor = 1.0
-            if choice == "2":
-                # 检查社牛天赋
-                if any("社牛" in [t.name for t in s.traits] for s in students):
-                    self.log(f"{Fore.YELLOW}因'社牛'同学存在，社交效果翻倍！{Style.RESET_ALL}")
-                    social_factor = 2.0
-            
-            if choice == "1":
-                self.log("大家在酒店疯狂刷题...")
-                for s in students: 
-                    s.train({"理论": EFFECT_MAP["小幅提升"]}, 1.0)
-                    s.apply_stress(EFFECT_MAP["压力小幅增高"])
-            elif choice == "2":
-                self.log("与其他学校的同学交流...")
-                for s in students:
-                    s.train({"天文常识": EFFECT_MAP["小幅提升"]}, social_factor)
-                    s.apply_stress(EFFECT_MAP["压力小幅降低"] * social_factor)
+                    
+            # 每天 3 次行动机会
+            for action_count in range(1, 3):
+                clear_screen()
+                print_separator(Fore.YELLOW + '☆')
+                print(f"--- {contest_name} 第 {day}/{days} 天 | 第 {action_count}/2 次行动 ---")
                 
-                event = random.choice([
-                    "遇到了传说中的大佬，深受打击（压力增高）。", 
-                    "遇到了可爱的妹子/汉子，心情愉悦（压力降低）。",
-                    "听说隔壁学校全员重感冒，暗自窃喜（压力降低）。"
-                ])
-                self.log(f"社交事件：{event}")
-                if "打击" in event: [s.apply_stress(EFFECT_MAP["压力小幅增高"]) for s in students]
-                if "愉悦" in event: [s.apply_stress(EFFECT_MAP["压力小幅降低"]) for s in students]
-                if "窃喜" in event: [s.apply_stress(EFFECT_MAP["压力小幅降低"]) for s in students]
-            elif choice == "3":
-                self.log("大家去吃了一顿好的...")
-                for s in students: s.apply_stress(EFFECT_MAP["压力大幅降低"])
-            elif choice == "4":
-                # 省赛和国决都有观测考试
-                if "省级" in contest_name or "国决" in contest_name:
-                    self.log("去考场踩点...")
-                    for s in students: s.train({"观测": EFFECT_MAP["小幅提升"]}, 1.0)
-                else:
-                    self.log("今天没有观测项目，踩点没用，大家在寒风中白站了一小时。")
-                    for s in students: s.apply_stress(EFFECT_MAP["压力小幅增高"])
-            
-            press_enter()
+                # 显示当前临时属性状态 (只显示第一个学生的状态)
+                print(f"{Fore.CYAN}【临时知识状态】{Style.RESET_ALL}")
+                temp_attr_parts = []
+                # 遍历属性，只显示非零的临时增益
+                for k, v in students[0].temp_attrs.items():
+                    if v != 0:
+                        color = Fore.GREEN if v > 0 else Fore.RED
+                        temp_attr_parts.append(f"{k}: {color}{v:+.0f}{Style.RESET_ALL}")
+                if not temp_attr_parts: temp_attr_parts.append("无临时增益")
+                print(" | ".join(temp_attr_parts))
+                print_separator('.')
+                
+                print(f"{Fore.GREEN}请选择今天的活动（行动 {action_count}/2）：{Style.RESET_ALL}")
+                
+                # 每次随机选 4 个行动
+                available_actions = random.sample(CNAO_ACTIONS, min(4, len(CNAO_ACTIONS))) 
+                menu_map = {}
+                
+                for i, action in enumerate(available_actions):
+                    index = str(i + 1)
+                    print(f"{index}. {action['name']:<15}: {action['desc']}")
+                    menu_map[index] = action
+                
+                choice = input("请输入选择 (1-4) 或 's' 跳过：").lower()
+                
+                if choice == 's':
+                    self.log("选择了休息，恢复精力。")
+                    press_enter()
+                    continue
+                
+                if choice not in menu_map:
+                    self.log("无效的选择，浪费了一次机会。")
+                    time.sleep(1)
+                    press_enter()
+                    continue
+
+                action = menu_map[choice]
+                self.log(f"【行动】参与：{action['name']}")
+                
+                # --- 执行行动函数 ---
+                # 调用对应的函数，将 Game 实例和学生列表传入，
+                # 函数内部通过 get_choice 处理多轮交互和随机结果。
+                action['function'](self, students) 
+                
+                press_enter()
+                
+            self.log(f"国决第 {day} 天结束。")
+
+        press_enter()
 
     def run_city_contest(self):
         """市级预赛"""
@@ -926,5 +781,602 @@ def main():
              # 已在上面输出，此处可省略
              pass 
 
+
+
+# ==================================
+def get_choice(prompt, options):
+    """
+    显示提示和选项，并循环等待有效输入。
+    """
+    keys = list(options.keys())
+    # 确保选项按字母顺序显示，更美观
+    keys.sort() 
+    
+    while True:
+        print(f"\n{Fore.YELLOW}>> {prompt}{Style.RESET_ALL}")
+        for key in keys:
+            print(f"  [{key}] {options[key]}")
+        choice = input(f"请选择 ({'/'.join(keys)}): ").upper()
+        if choice in keys:
+            return choice
+        print(f"{Fore.RED}无效选择'{choice}'，请重新输入。{Style.RESET_ALL}")
+    
+def apply_effect_to_all_active(students, attr_name, key):
+    """
+    根据 EFFECT_MAP 的键值，将效果应用给所有在社学生。
+    """
+    # 尝试安全获取值，如果键不存在则默认为 0
+    effect_value = EFFECT_MAP.get(key, 0.0) 
+    
+    # 只有效果值不为 0 时才进行计算
+    if effect_value == 0:
+        return 
+        
+    for s in students:
+        if s.status == "在社":
+            # 确保 temp_attrs 是字典并且包含该属性的键，然后使用数值进行加法运算
+            s.temp_attrs[attr_name] = s.temp_attrs.get(attr_name, 0) + effect_value
+
+
+def action_aluba_master(game, students):
+    print("【阿鲁巴大师挑战】国决期间的特色友好交流")
+    
+    choice1 = get_choice(
+        "你的目标是隔壁省队最壮的那个，你打算用什么策略迷惑他？",
+        {"A": "声东击西，假装去阿他旁边那个瘦子。", "B": "直捣黄龙，用充满哲学意味的眼神盯着他，让他害怕。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("声东击西成功，目标被分心，但瘦子跑得很快，你错失了良机。")
+        choice2 = get_choice(
+            "你决定在僵持中，大喊狼来了：",
+            {"C": "“看！鱼雷入侵了！”", "D": "“李老师在盯着你！”"}
+        )
+        if choice2 == "C":
+            r = random.random()
+            if r < 0.7:
+                apply_effect_to_all_active(students, "天文常识", "提升")
+                msg = Fore.GREEN + f"成功阿倒！对方被你的喊话震慑！常识{Fore.GREEN}提升{Style.RESET_ALL}！"
+            else:
+                apply_effect_to_all_active(students, "理论", "轻微下降")
+                msg = Fore.RED + f"被反击！你被阿了。理论{Fore.RED}轻微下降{Style.RESET_ALL}！"
+        else:
+            msg = Fore.YELLOW + "对方愣了一下，你决定悄悄溜走，无事发生。"
+    
+    elif choice1 == "B":
+        print("你的眼神战术奏效，目标感到了压力，但你发现自己也处于危险中。")
+        r = random.random()
+        if r < 0.4:
+            apply_effect_to_all_active(students, "理论", "大幅提升")
+            msg = Fore.GREEN + f"成功阿倒！通过强大的心理暗示，你领悟了理论即是力量。理论{Fore.GREEN}大幅提升{Style.RESET_ALL}！"
+        else:
+            apply_effect_to_all_active(students, "实测", "小幅下降")
+            msg = Fore.RED + f"你被意外反击，最终被阿了，实测{Fore.RED}小幅下降{Style.RESET_ALL}！"
+            
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+def action_lilaoshi(game, students):
+    print("在酒店大堂你看到了一个疑似天文李老师的人")
+    
+    choice1 = get_choice(
+        "是否打招呼？",
+        {"A": "打招呼。", "B": "偷偷溜走。"}
+    )
+    msg = ""
+    if choice1 == "A":
+        print("李老师问你是否给他的视频三连了。")
+        choice2 = get_choice(
+            "是否三连过？",
+            {"C": "“已经三连！”", "D": "“没有三连！”"}
+        )
+        if choice2 == "C":
+            r = random.random()
+            if r < 0.7:
+                apply_effect_to_all_active(students, "天文常识", "提升")
+                msg = Fore.GREEN + f"李老师很高兴！天文常识{Fore.GREEN}提升{Style.RESET_ALL}！"
+            else:
+                apply_effect_to_all_active(students, "天文常识", "下降")
+                msg = Fore.RED + f"李老师戳穿了你的谎言，并敦促你立即去三连。天文常识{Fore.RED}下降{Style.RESET_ALL}！"
+        else:
+            apply_effect_to_all_active(students, "天文常识", "下降")
+            msg = Fore.RED + f"李老师将你记在小本本上，愤怒的离开了。天文常识{Fore.RED}下降{Style.RESET_ALL}！"
+    
+    elif choice1 == "B":
+        print("尝试偷偷溜走。")
+        r = random.random()
+        if r < 0.4:
+            apply_effect_to_all_active(students, "理论", "小幅提升")
+            msg = Fore.GREEN + f"被李老师看到了，并开始谈笑风生。理论{Fore.GREEN}小幅提升{Style.RESET_ALL}！"
+        else:
+            msg = Fore.YELLOW + f"李老师没有看到你，成功溜走，无事发生！"
+            
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+def action_yulei(game, students):
+    print("你躺在床上，开始刷手机，突然你看到啵酱天文发新文章了！")
+    
+    choice1 = get_choice(
+        "是否打开",
+        {"A": "打开。", "B": "不打开。"}
+    )
+    msg = ""
+    if choice1 == "A":
+        print("啵酱发了一套新的国决模拟题！。")
+        choice2 = get_choice(
+            "你决定...",
+            {"C": "“分享到群里！”", "D": "“自己偷偷看！”"}
+        )
+        if choice2 == "C":
+            apply_effect_to_all_active(students, "理论", "下降")
+            game.adjust_money(-100)
+            msg = Fore.RED + f"群友非常愤怒，决定向你收税。你损失了一些金钱，理论{Fore.RED}下降{Style.RESET_ALL}！"
+        else:
+            apply_effect_to_all_active(students, "理论", "大幅下降")
+            msg = Fore.RED + f"你尝试独自消化，但题目不知所云。理论{Fore.RED}大幅下降{Style.RESET_ALL}！"
+    
+    elif choice1 == "B":
+        print("你并不想点开来看，但还是有点反胃。")
+        apply_effect_to_all_active(students, "天文常识", "小幅下降")
+        msg = Fore.YELLOW + Fore.RED + f"天文常识{Fore.RED}小幅下降{Style.RESET_ALL}！"
+            
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_wolf_celestial_logic(game, students):
+    """2. 通宵狼人杀：星图逻辑推理 (理论/常识)"""
+    print("【通宵狼人杀：星图逻辑推理】国决期间的智力游戏，大家都开始用天文梗对线...")
+
+    choice1 = get_choice(
+        "一位玩家被质疑身份，他的辩解提到了'北天极附近恒星永不落'来证明自己是好人。你决定如何反驳？",
+        {"A": "指出他发言的逻辑漏洞：永不落不等于永不撒谎。", "B": "指出他的天文常识错误：北天极附近也有周期性隐匿的恒星。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你强大的逻辑思维让对手哑口无言。你获得了最终发言权。")
+        r = random.random()
+        if r < 0.8:
+            apply_effect_to_all_active(students, "理论", "提升")
+            msg = Fore.GREEN + f"逻辑严密！你赢得了全场赞同。理论{Fore.GREEN}提升{Style.RESET_ALL}！"
+        else:
+            msg = Fore.YELLOW + "虽然逻辑正确，但对手被其他玩家救了，无增益。"
+    
+    elif choice1 == "B":
+        print("你指出他常识错误的举动引起了全场关于'永不落'定义的激烈辩论。")
+        r = random.random()
+        if r < 0.5:
+            apply_effect_to_all_active(students, "天文常识", "小幅提升") 
+            msg = Fore.GREEN + f"常识+1.5！辩论让你巩固了极区天体常识！"
+        else:
+            apply_effect_to_all_active(students, "理论", "轻微下降") 
+            msg = Fore.RED + f"你被人质疑在玩游戏时太死板！理论{Fore.RED}轻微下降{Style.RESET_ALL}！"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_deep_sky_gossip(game, students):
+    """3. 深空八卦：导师黑历史 (常识)"""
+    print("【深空八卦大会】有人爆料某知名老师多年前赶到很远的设备观测点，到设备故障...")
+    
+    choice1 = get_choice(
+        "你决定加入讨论，并提出你认为当年最可能导致故障的原因：", 
+        {"A": "老师忘记摘镜头盖。", "B": "忘记带备用电源，电池耗尽，无法自动追踪。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你和爆料人进行了一番煞有介事的讨论。")
+        apply_effect_to_all_active(students, "观测", "小幅提升")
+        msg = Fore.YELLOW + f"观测+1.5！分析过程让你对野外器材维护有了深入了解。"
+    
+    elif choice1 == "B":
+        print("你加入了更多关于电源管理和夜间观测流程的细节，成功引起了两位前辈的注意。")
+        r = random.random()
+        if r < 0.9:
+            apply_effect_to_all_active(students, "天文常识", "提升")
+            msg = Fore.GREEN + f"常识+3！前辈为你讲解了电源管理的野外常识！"
+        else:
+            apply_effect_to_all_active(students, "天文常识", "轻微下降")
+            msg = Fore.RED + f"前辈纠正了你的一个严重常识错误，常识{Fore.RED}轻微下降{Style.RESET_ALL}！"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_observatory_misadventure(game, students):
+    """4. 观测台的灵异事件 (观测/常识)"""
+    print("【观测台的灵异事件】半夜天文台传来了奇怪的“咚咚”声，像是有东西在撞击圆顶...")
+    
+    choice1 = get_choice(
+        "你鼓起勇气偷偷潜入天文台，声音来自圆顶内部。你决定：", 
+        {"A": "立即打开圆顶控制开关，查看是否有异物（高风险）。", "B": "检查圆顶通风口或观察窗，用手机电筒侦查（低风险）。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你打开圆顶，发现一只巨大的飞蛾被困在圆顶边缘，它吓了你一跳。")
+        r = random.random()
+        if r < 0.7:
+            apply_effect_to_all_active(students, "观测", "提升")
+            msg = Fore.GREEN + f"观测+3！你因祸得福，发现圆顶校准有一点偏差，并将其修好！"
+        else:
+            apply_effect_to_all_active(students, "观测", "小幅下降")
+            msg = Fore.RED + "你弄坏了一个小部件，被飞蛾嘲笑，观测{Fore.RED}小幅下降{Style.RESET_ALL}。"
+    
+    elif choice1 == "B":
+        print("你偷偷侦查，发现了那只飞蛾。虽然没学到技术，但获得了宝贵的深夜观测经验。")
+        r = random.random()
+        if r < 0.8:
+            apply_effect_to_all_active(students, "天文常识", "小幅提升")
+            msg = Fore.GREEN + f"常识+1.5！你认识到了野外观测中昆虫对设备的影响！"
+        else:
+            msg = Fore.YELLOW + "飞蛾飞走了，你什么都没发现。"
+            
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_ccd_driver_haunted(game, students):
+    """6. CCD驱动故障与玄学 (实测/观测)"""
+    print("【CCD驱动故障与玄学】你正在为野外观测调试CCD，但驱动总是间歇性崩溃...")
+    
+    choice1 = get_choice(
+        "你检查了所有参数，但找不到原因。一位老油条建议你试试'祭天'（烧高香）或：", 
+        {"A": "用U盘重新刷入一个据说很稳定但年代久远的驱动版本。", "B": "彻底放弃软件，转而检查数据线和电源线的接触。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("旧驱动成功刷入，但兼容性很差，你必须手动调整数百个参数。")
+        r = random.random()
+        if r < 0.4:
+            apply_effect_to_all_active(students, "实测", "大幅提升")
+            msg = Fore.GREEN + f"实测+4！你通过手动调试掌握了CCD底层参数的奥秘！"
+        else:
+            apply_effect_to_all_active(students, "观测", "小幅下降")
+            msg = Fore.RED + f"调试失败，CCD彻底罢工，观测{Fore.RED}小幅下降{Style.RESET_ALL}！"
+            
+    elif choice1 == "B":
+        print("你发现数据线的一个接口松动了，重新插紧后，驱动奇迹般地稳定了。")
+        apply_effect_to_all_active(students, "实测", "提升")
+        msg = Fore.GREEN + f"实测+3！大道至简！硬件才是真理！"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_exam_paper_treasure(game, students):
+    """7. 考场楼道寻宝：旧试卷残片 (理论/常识)"""
+    print("【考场楼道寻宝】你找到了一张某年国决的旧试卷残片，上面写着一道关于'引力波'探测的计算题...")
+    
+    choice1 = get_choice(
+        "残片上缺少了描述'时空微扰'的关键公式。你决定：", 
+        {"A": "尝试凭对广义相对论的理解补全公式，进行理论推导。", "B": "只记住已有的已知条件和结论，回去查阅 LIGO 论文。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你对着残片琢磨了半小时，最终补全了一个关键的张量方程。")
+        r = random.random()
+        if r < 0.6:
+            apply_effect_to_all_active(students, "理论", "提升")
+            msg = Fore.GREEN + f"理论+3！补全成功，你对引力波有了更深的理解！"
+        else:
+            apply_effect_to_all_active(students, "理论", "轻微下降")
+            msg = Fore.RED + f"补全失败，你把公式写错了，理论{Fore.RED}轻微下降{Style.RESET_ALL}！"
+        
+    elif choice1 == "B":
+        print("你记住了关键词：'引力波'和'时空微扰'。")
+        apply_effect_to_all_active(students, "天文常识", "小幅提升")
+        msg = Fore.GREEN + f"常识+1.5！关键词记忆成功，常识得到了巩固！"
+    
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_constellation_teller(game, students):
+    """8. 星座算命大师 (常识/理论)"""
+    print("【星座算命大师】一个隔壁队伍的学姐声称能用星图知识为你占卜考试命运...")
+    
+    choice1 = get_choice(
+        "她要求你选择你本命星座（假设是天蝎座）对冲的星座（金牛座），并问'天蝎座的恒星颜色代表了什么命运？' 你选择：", 
+        {"A": "指出天蝎座主星心宿二（Antares）是红色超巨星，代表巨大但短暂的爆发。", "B": "胡诌一个'黄色代表光明，蓝色代表智慧'的答案。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("学姐惊讶于你的知识储备，开始认真讲解恒星演化对人生的'启示'。")
+        r = random.random()
+        if r < 0.6:
+            apply_effect_to_all_active(students, "理论", "小幅提升")
+            msg = Fore.GREEN + f"理论+1.5！学姐被你带入科学，你获得了关于赫罗图的知识！"
+        else:
+            msg = Fore.YELLOW + "学姐表示'你太理性了'，占卜失败，无增益。"
+            
+    elif choice1 == "B":
+        print("学姐笑了，但为了配合你，她给了你一个关于'古代七曜'的图谱。")
+        r = random.random()
+        if r < 0.8:
+            apply_effect_to_all_active(students, "天文常识", "提升")
+            msg = Fore.GREEN + f"常识+3！你巩固了大量黄道星座和古代行星常识！"
+        else:
+            msg = Fore.YELLOW + "图谱是假的，无增益。"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_usb_dark_matter(game, students):
+    """9. U盘里的暗物质数据 (实测/理论)"""
+    print("【U盘里的暗物质数据】老师离开了电脑，U盘里是关于暗物质的原始数据...")
+    
+    choice1 = get_choice(
+        "U盘里有两个文件夹，一个叫'DM_MODEL_v3'，另一个叫'Final_Exam_Prep'。你选择查看：", 
+        {"A": "DM_MODEL_v3：暗物质模型和模拟代码。", "B": "Final_Exam_Prep：最后的考前资料。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("模型是加密的。")
+        r = random.random()
+        if r < 0.2:
+            apply_effect_to_all_active(students, "理论", "大幅提升")
+            msg = Fore.GREEN + f"理论+4！你竟然破解了密码！看到了几道关键的暗物质模型公式！"
+        else:
+            msg = Fore.RED + f"密码错误，老师回来了！你被狠狠训了一顿，无增益。"
+            
+    elif choice1 == "B":
+        print("你打开了考前资料，发现里面只有一张'好好睡觉'的图片和一个巨大的 Excel 表格。")
+        choice2 = get_choice(
+            "你决定：",
+            {"C": "复制 Excel 表格，回去研究里面的'天体普查数据'。", "D": "只看图片，听从老师的劝告去睡觉。"}
+        )
+        if choice2 == "C":
+            r = random.random()
+            if r < 0.6:
+                apply_effect_to_all_active(students, "实测", "提升")
+                msg = Fore.GREEN + f"实测+3！你成功处理了普查数据，获得了宝贵的经验！"
+            else:
+                msg = Fore.YELLOW + f"表格是空的，老师的玩笑，无增益。"
+        else:
+            msg = Fore.YELLOW + f"你获得了充足的休息，但没有知识增益。"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_cosmos_cuisine(game, students):
+    """10. 宇宙料理挑战 (常识)"""
+    print("【宇宙料理挑战】联欢会上有一道名为'宇宙大尺度结构'的黑暗料理...")
+    
+    choice1 = get_choice(
+        "这道菜看起来像一个巨大的、松散的、充满各种奇怪物质的球体。你决定：", 
+        {"A": "挑战它，吃完一整份，领悟大尺度结构的复杂性。", "B": "只尝一小口，专注于其中看起来最像'星系团'的部分。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你吃完了，感受到了巨大的痛苦，仿佛味蕾在经历'宇宙膨胀'。")
+        r = random.random()
+        if r < 0.4:
+            apply_effect_to_all_active(students, "理论", "小幅提升")
+            msg = Fore.GREEN + f"理论+1.5！痛苦让你想起了宇宙结构的层次原理！"
+        else:
+            apply_effect_to_all_active(students, "天文常识", "轻微下降")
+            msg = Fore.RED + f"你吐了，胃部极度不适，常识{Fore.RED}轻微下降{Style.RESET_ALL}！"
+            
+    elif choice1 == "B":
+        print("你成功分离出了一块'星系团'，并和一位本地同学交流了这道菜的地域特色。")
+        r = random.random()
+        if r < 0.8:
+            apply_effect_to_all_active(students, "天文常识", "提升")
+            msg = Fore.GREEN + f"常识+3！本地同学告诉你了很多关于当地夜空和观测点的常识！"
+        else:
+            msg = Fore.YELLOW + f"交流了半天，发现对方也是外地的。无增益。"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_big_bang_debate(game, students):
+    """11. 大爆炸终极辩论：宇宙模型 (理论/常识)"""
+    print("【大爆炸终极辩论】一位老教授提出了对标准宇宙模型的质疑，引起激烈辩论...")
+    
+    choice1 = get_choice(
+        "教授认为'宇宙暴胀理论'存在瑕疵。你选择支持哪个观点？", 
+        {"A": "反驳：利用最新观测到的 CMB 数据证明暴胀的必要性。", "B": "支持：提出'火劫宇宙模型'作为暴胀的替代方案。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你的观点基于最新数据和严谨的理论，让反对者哑口无言。")
+        apply_effect_to_all_active(students, "理论", "大幅提升")
+        msg = Fore.GREEN + f"理论+4！你的理论知识得到了飞速提升！"
+            
+    elif choice1 == "B":
+        print("你的新观点（火劫模型）引起了激烈的争论。你决定：")
+        choice2 = get_choice(
+            "如何支持你的火劫模型观点？",
+            {"C": "引用一道涉及弦理论的复杂数学公式来镇场。", "D": "用生动的比喻来解释周期性宇宙的常识。"}
+        )
+        if choice2 == "C":
+            r = random.random()
+            if r < 0.7:
+                apply_effect_to_all_active(students, "理论", "提升")
+                msg = Fore.GREEN + f"理论+3！查资料巩固了大量知识！"
+            else:
+                msg = Fore.YELLOW + f"公式写错了，被嘲笑了，无增益。"
+        else:
+            apply_effect_to_all_active(students, "天文常识", "小幅提升")
+            msg = Fore.YELLOW + f"常识+1.5！比喻生动有趣，略有收获。"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_basketball_kepler(game, students):
+    """15. 篮球：开普勒投篮 (理论/常识)"""
+    print("【篮球：开普勒投篮】你获得了最后一投的机会，比分持平...")
+    
+    choice1 = get_choice(
+        "你决定用哪种方式确保命中？", 
+        {"A": "默念'我的运动是开普勒轨道'，用理论计算抛物线弧度。", "B": "相信直觉，用你最擅长的姿势大力出奇迹！"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你严格遵循物理原理，投出了一个漂亮的弧线。")
+        r = random.random()
+        if r < 0.6:
+            apply_effect_to_all_active(students, "理论", "小幅提升")
+            msg = Fore.GREEN + f"理论+1.5！命中！抛物线计算成功！"
+        else:
+            msg = Fore.YELLOW + f"物理学救不了篮球，但你回忆起了动量定理，无增益。"
+            
+    elif choice1 == "B":
+        print("球飞得很高，在空中停留了很久，大家开始讨论'空气阻力'对天体运动的微弱影响！")
+        apply_effect_to_all_active(students, "天文常识", "轻微提升")
+        msg = Fore.GREEN + f"常识+1！虽然球没进，但你巩固了常识！"
+
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_midnight_poetry(game, students):
+    """16. 午夜天文诗歌大会 (常识)"""
+    print("【午夜天文诗歌大会】你被要求以'黑洞'为主题即兴创作一首诗歌...")
+    
+    choice1 = get_choice(
+        "你决定突出黑洞的哪个特征？", 
+        {"A": "事件视界（Event Horizon）的哲学意境。", "B": "吸积盘（Accretion Disk）发出X射线的物理过程。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你的诗歌充满了对时空边界的思考，得到了文学爱好者的赞赏。")
+        apply_effect_to_all_active(students, "天文常识", "小幅提升")
+        msg = Fore.GREEN + f"常识+1.5！你巩固了黑洞的基本概念！"
+    
+    elif choice1 == "B":
+        print("你的诗歌太专业，提到了黑体辐射和光子能量，一位理论导师对你表示赞赏。")
+        apply_effect_to_all_active(students, "理论", "轻微提升")
+        msg = Fore.YELLOW + f"理论+1！你的专业度得到了认可。"
+        
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_meteorite_identification(game, students):
+    """17. 陨石真伪鉴别 (常识/实测)"""
+    print("【陨石真伪鉴别】有人声称在校园里捡到了一块陨石，并要卖给你...")
+    
+    choice1 = get_choice(
+        "你检查了这块石头，它看起来像陨石。你决定用什么方法快速鉴定？", 
+        {"A": "检查是否具有磁性，并用指甲试刮（实测）。", "B": "询问关于它在进入大气层时燃烧的颜色（常识）。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("石头有微弱的磁性，但没有熔壳。你需要确定它是否是普通地球岩石。")
+        r = random.random()
+        if r < 0.7:
+            apply_effect_to_all_active(students, "实测", "提升")
+            msg = Fore.GREEN + f"实测+3！你成功鉴别出这块石头是含镍铁陨石（或铁矿石）！"
+        else:
+            apply_effect_to_all_active(students, "实测", "轻微下降")
+            msg = Fore.YELLOW + "你被割伤了手，无法确定真伪。实测{Fore.RED}轻微下降{Style.RESET_ALL}。"
+    
+    elif choice1 == "B":
+        print("对方被你问得语塞，你回忆起了不同元素燃烧产生的颜色常识。")
+        apply_effect_to_all_active(students, "天文常识", "小幅提升")
+        msg = Fore.GREEN + f"常识+1.5！巩固了陨石化学成分相关知识！"
+        
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_planetarium_date(game, students):
+    """18. 星象厅的秘密约会 (观测/常识)"""
+    print("【星象厅的秘密约会】偷偷在星象厅练习定位，你发现投影仪的坐标系是错的...")
+    
+    choice1 = get_choice(
+        "为了不惊动别人，你决定偷偷校准坐标系。你选择练习定位：", 
+        {"A": "南天极附近的麦哲伦星系（需要精确的坐标变换）。", "B": "银河系中心的Sagittarius A* 区域（需要大量常识定位）。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("南天极的星图比想象中复杂，你需要多次尝试校准。")
+        r = random.random()
+        if r < 0.8:
+            apply_effect_to_all_active(students, "观测", "提升")
+            msg = Fore.GREEN + f"观测+3！成功校准坐标系，定位了南半球天体！"
+        else:
+            apply_effect_to_all_active(students, "观测", "小幅下降")
+            msg = Fore.RED + "你被投影仪的噪音吸引了工作人员，被迫逃跑。观测{Fore.RED}小幅下降{Style.RESET_ALL}。"
+    
+    elif choice1 == "B":
+        print("银心区域的常识性知识点非常多。")
+        apply_effect_to_all_active(students, "天文常识", "小幅提升")
+        msg = Fore.GREEN + f"常识+1.5！复习了银心区域的知识！"
+        
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+
+def action_solar_filter_drama(game, students):
+    """19. 太阳滤光片意外 (观测/常识)"""
+    print("【太阳滤光片意外】有人在调试望远镜时忘记盖上太阳滤光片，阳光直射而入！")
+    
+    choice1 = get_choice(
+        "滤光片突然掉了！你必须立即采取行动：", 
+        {"A": "迅速关闭目镜盖，并检查观测室的遮光状态，大喊'注意光害！'。", "B": "大喊一声'日冕抛射！'然后逃跑，引开人群。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你成功避免了事故，并学到了紧急处理流程。")
+        apply_effect_to_all_active(students, "观测", "小幅提升")
+        msg = Fore.GREEN + f"观测+1.5！成功的紧急处理经验！"
+    
+    elif choice1 == "B":
+        print("你的喊声引起了围观，但并没有解决问题。")
+        apply_effect_to_all_active(students, "天文常识", "轻微提升")
+        msg = Fore.YELLOW + f"常识+1！大家讨论了日冕抛射的危害，无实际观测增益。"
+        
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+def action_astronomical_meme(game, students):
+    """25. 天文梗图设计大赛 (常识)"""
+    print("【天文梗图设计大赛】用天文知识设计搞笑梗图，大家投票决定优胜者...")
+    
+    choice1 = get_choice(
+        "你决定设计一个关于'黑洞'的梗图，你突出：", 
+        {"A": "黑洞对周围恒星的潮汐力撕裂效果（Spaghettification）的痛苦和生草。", "B": "黑洞视界（Event Horizon）内'霍金辐射'的量子物理悖论。"}
+    )
+    
+    msg = ""
+    if choice1 == "A":
+        print("你的梗图简单粗暴又搞笑，在人群中广为流传，大家都记住了潮汐力！")
+        apply_effect_to_all_active(students, "天文常识", "提升")
+        msg = Fore.GREEN + f"常识+3！梗图大受欢迎，巩固了恒星演化常识！"
+    
+    elif choice1 == "B":
+        print("你的梗图过于深奥，只有少数理论大佬看懂了，但他们对你的理论知识表示敬佩。")
+        apply_effect_to_all_active(students, "理论", "轻微提升")
+        msg = Fore.YELLOW + f"理论+1！小众梗图得到了理论圈的认可。"
+        
+    print(f"{Fore.MAGENTA}*** 结果 ***: {msg}{Style.RESET_ALL}")
+
+CNAO_ACTIONS = [
+    {"name": "阿鲁巴", "desc": "传统游戏。", "function": action_aluba_master},
+    {"name": "狼人杀", "desc": "找出狼人。", "function": action_wolf_celestial_logic},
+    {"name": "八卦夜聊", "desc": "讨论老师观测中的重大失误。", "function": action_deep_sky_gossip},
+    {"name": "天文台灵异事件", "desc": "调查望远镜的'幽灵星'出没事件。", "function": action_observatory_misadventure},
+    {"name": "修复CCD", "desc": "解决驱动问题，使用玄学仪式。", "function": action_ccd_driver_haunted},
+    {"name": "考场楼道寻宝", "desc": "寻找十年前的国决旧试卷残片。", "function": action_exam_paper_treasure},
+    {"name": "星座算命大师", "desc": "用你的本命星座预测考试分数。", "function": action_constellation_teller},
+    {"name": "U盘里的暗物质数据", "desc": "老师U盘里是机密暗物质旋转曲线数据。", "function": action_usb_dark_matter},
+    {"name": "宇宙料理挑战", "desc": "挑战以'类星体'命名的诡异炒饭。", "function": action_cosmos_cuisine},
+    {"name": "大爆炸终极辩论", "desc": "关于'宇宙是否有中心'的激烈思辨。", "function": action_big_bang_debate},
+    {"name": "篮球放松", "desc": "用开普勒定律计算完美弧度投篮。", "function": action_basketball_kepler},
+    {"name": "午夜神秘天文诗歌仪式", "desc": "以'红巨星'为主题即兴创作诗歌。", "function": action_midnight_poetry},
+    {"name": "陨石真伪鉴别", "desc": "鉴别一块声称是陨石的石头。", "function": action_meteorite_identification},
+    {"name": "星象厅的秘密约会", "desc": "偷偷打开星象厅投影仪练习南天极定位。", "function": action_planetarium_date},
+    {"name": "太阳滤光片意外", "desc": "紧急处理望远镜滤光片脱落的事故。", "function": action_solar_filter_drama},
+    {"name": "天文梗图设计大赛", "desc": "为联欢会做准备！", "function": action_astronomical_meme},
+    {"name": "散步寻找熟人", "desc": "看看会发生什么吧", "function": action_lilaoshi},
+    {"name": "网上冲浪", "desc": "还是刷刷手机吧", "function": action_yulei},
+]
+# ==================================
 if __name__ == "__main__":
     main()
