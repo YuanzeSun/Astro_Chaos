@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>天文闹赛 Astro Chaos</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="topbar" aria-label="游戏状态">
+        <div>
+          <p>Astro Chaos</p>
+          <h1>天文闹赛</h1>
+        </div>
+        <div class="controls">
+          <label class="select-label">
+            社员
+            <select id="studentCount">
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6" selected>6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+          <button id="newGame" class="icon-button" type="button" title="新游戏" aria-label="新游戏">
+            <span>↻</span>
+          </button>
+          <button id="settingsButton" class="settings-button" type="button">API 设置</button>
+          <label class="switch" title="开启 OpenAI 实时反应">
+            <input id="aiToggle" type="checkbox">
+            <span></span>
+            AI
+          </label>
+        </div>
+      </section>
+
+      <section class="dashboard" aria-label="仪表盘">
+        <article>
+          <span>时间</span>
+          <strong id="dateLabel"></strong>
+        </article>
+        <article>
+          <span>资金</span>
+          <strong id="money"></strong>
+        </article>
+        <article>
+          <span>天气</span>
+          <strong id="weather"></strong>
+        </article>
+        <article>
+          <span>下一赛程</span>
+          <strong id="nextContest"></strong>
+        </article>
+        <article>
+          <span>设备</span>
+          <strong id="equipment"></strong>
+        </article>
+        <article>
+          <span>士气</span>
+          <strong id="morale"></strong>
+        </article>
+        <article>
+          <span>在社</span>
+          <strong id="activeCount"></strong>
+        </article>
+        <article>
+          <span>均压</span>
+          <strong id="avgStress"></strong>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <div class="left-column">
+          <section class="panel plan-panel">
+            <header>
+              <div>
+                <p>Weekly Plan</p>
+                <h2>本周安排</h2>
+              </div>
+              <button id="advance" class="primary-button" type="button">执行并推进一周</button>
+            </header>
+            <div id="planList" class="plan-list"></div>
+          </section>
+
+          <section class="panel">
+            <header>
+              <div>
+                <p>Members</p>
+                <h2>社员状态</h2>
+              </div>
+              <div id="teamBars" class="team-bars"></div>
+            </header>
+            <div id="studentGrid" class="student-grid"></div>
+          </section>
+        </div>
+
+        <aside class="right-column">
+          <section id="ending" class="ending" hidden></section>
+
+          <section class="panel">
+            <header>
+              <div>
+                <p>Contest</p>
+                <h2>赛事结果</h2>
+              </div>
+            </header>
+            <div id="contestPanel"></div>
+          </section>
+
+          <section class="panel">
+            <header>
+              <div>
+                <p>Log</p>
+                <h2>消息</h2>
+              </div>
+              <span id="aiStatus" class="status-pill"></span>
+            </header>
+            <ol id="logList" class="log-list"></ol>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <div id="toast" class="toast" hidden></div>
+    <dialog id="settingsDialog" class="settings-dialog">
+      <form method="dialog">
+        <header>
+          <div>
+            <p>OpenAI Compatible API</p>
+            <h2>API 设置</h2>
+          </div>
+          <button value="cancel" class="icon-button" type="submit" aria-label="关闭">×</button>
+        </header>
+        <label>
+          API Token
+          <input id="apiToken" type="password" autocomplete="off" placeholder="sk-...">
+        </label>
+        <label>
+          Base URL（可为空，仅自定义网关时填写）
+          <input id="apiBaseUrl" type="url" placeholder="可为空；例如 https://your-openai-compatible.example.com">
+        </label>
+        <label>
+          模型
+          <div class="model-picker">
+            <select id="apiModel"></select>
+            <button id="refreshModels" type="button">获取模型</button>
+          </div>
+          <small id="modelStatus">填写 Token；Base URL 可为空，仅自定义网关时填写。</small>
+        </label>
+        <label>
+          Wire API
+          <select id="wireApi">
+            <option value="responses">Responses</option>
+            <option value="chat">Chat Completions</option>
+          </select>
+        </label>
+        <label>
+          AI 模式
+          <select id="aiMode">
+            <option value="events">锐评 + 随机事件</option>
+            <option value="commentary">仅锐评</option>
+          </select>
+        </label>
+        <menu>
+          <button value="cancel" type="submit">取消</button>
+          <button id="saveSettings" value="default" class="primary-button" type="submit">保存</button>
+        </menu>
+      </form>
+    </dialog>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
