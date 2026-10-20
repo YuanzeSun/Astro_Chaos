@@ -90,6 +90,14 @@ export const NIGHTS: NightOption[] = [
     lose: { text: "阴天。阴天教徒表示：不是我干的。", stress: 2 },
   },
   {
+    id: "blackMoto",
+    label: "坐黑摩的上山看星",
+    contests: ["final"],
+    chance: 0.55,
+    win: { text: "师傅说他每年这时候都拉竞赛生上山，还会指北极星。大家提前看熟了当地的地平线。", bonus: { observe: 2 }, morale: 2 },
+    lose: { text: "师傅说山上今晚有云，把大家拉到了一家烧烤摊。烤串很好吃。", stress: -4, morale: 3 },
+  },
+  {
     id: "laundry",
     label: "生活自理特训",
     contests: ["camp"],

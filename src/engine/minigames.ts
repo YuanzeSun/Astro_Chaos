@@ -209,12 +209,46 @@ const CALC: Record<string, CalcGen> = {
       `v = H₀d。`,
     );
   },
+  peppa(g) {
+    // 地球上 v² = 2gh，星球上 v² = 2GM/R；密度相同时 g ∝ R，所以 R = √(h·R⊕)
+    const R = Math.sqrt(6.371e6);
+    const M = (4 / 3) * Math.PI * R ** 3 * 5514;
+    const lead = "小猪佩奇在地球上踩泥巴，能让泥巴飞 1 m 高。它来到一颗和地球密度相同的小星球，用力一踩，泥巴直冲云霄，刚好飞离星球，再也没有回来。";
+    if (rand(g) < 0.5) {
+      return calc(g, `${lead}这颗星球的半径约为？`, `${fmt(R / 1000, 1)} km`, ["25 km", "250 m", "80 km", "6400 km"], "地球上 v² = 2gh，星球上逃逸速度 v² = 2GM/R。密度相同时表面重力和半径成正比，化简得 R = √(h·R⊕) ≈ 2.5 km。CNAO 决赛真题。");
+    }
+    const mant = (M / 1e14).toFixed(1);
+    return calc(g, `${lead}这颗星球的质量约为？`, `${mant}×10¹⁴ kg`, [`${mant}×10¹¹ kg`, `${mant}×10¹⁷ kg`, "6.0×10²⁴ kg"], "先求半径 R = √(h·R⊕) ≈ 2.5 km，再乘上地球的密度：M = 4/3·πR³ρ ≈ 3.7×10¹⁴ kg。CNAO 决赛真题。");
+  },
+  dinosaur(g) {
+    const D = pick(g, [14, 28, 35, 70]);
+    const dm = 5 * Math.log10(D / 7);
+    return calc(
+      g,
+      `人眼瞳孔张到 7 mm 时，肉眼极限星等约 6 等。假设马门溪龙的瞳孔有 ${D} mm，它的极限星等约为？`,
+      `${fmt(6 + dm, 1)} 等`,
+      [`${fmt(6 + dm / 2, 1)} 等`, `${fmt(6 + D / 7, 1)} 等`, "6 等"],
+      `聚光本领和瞳孔面积成正比，Δm = 5 lg(${D}/7) ≈ ${fmt(dm, 1)}。真题里不会告诉你恐龙的瞳孔有多大。`,
+    );
+  },
+  threeBody(g) {
+    const [num, den] = pick(g, [[9, 10], [4, 5], [99, 100]] as const);
+    const ratio = den / (den - num);
+    const dm = 5 * Math.log10(ratio);
+    return calc(
+      g,
+      `三体舰队飞向太阳系，飞到全程的 ${num}/${den} 时出了故障，停在原地。和出发时相比，舰队看到的太阳亮了多少个星等？`,
+      `${fmt(dm, 1)} 个星等`,
+      [`${fmt(dm / 2, 1)} 个星等`, `${fmt(dm * 2, 1)} 个星等`, `${fmt(dm + 2.5, 1)} 个星等`],
+      `离太阳的距离变成原来的 1/${ratio}，亮度变成 ${ratio * ratio} 倍，Δm = 5 lg ${ratio} ≈ ${fmt(dm, 1)}。预赛真题改编。`,
+    );
+  },
 };
 
 const CALC_BY_LEVEL: Record<number, string[]> = {
-  1: ["kepler", "parallax", "ratio", "magnify", "aperture", "culmination"],
-  2: ["culmination", "kepler", "modulus", "parallax", "ratio", "wien", "hourAngle", "magnify", "hubble"],
-  3: ["culmination", "modulus", "wien", "hourAngle", "synodic", "hubble", "ratio"],
+  1: ["kepler", "parallax", "ratio", "magnify", "aperture", "culmination", "threeBody"],
+  2: ["culmination", "kepler", "modulus", "parallax", "ratio", "wien", "hourAngle", "magnify", "hubble", "peppa", "dinosaur", "threeBody"],
+  3: ["culmination", "modulus", "wien", "hourAngle", "synodic", "hubble", "ratio", "peppa", "dinosaur"],
 };
 
 export function calcQuestions(g: Rng, count: number, level: number): Question[] {

@@ -702,6 +702,47 @@ export const CHOICE_EVENTS: ChoiceEvent[] = [
     ],
   },
   {
+    id: "peppa",
+    title: "小猪佩奇踩泥巴",
+    text: "刷到一套决赛卷，{a}突然笑出了声：有道题里，小猪佩奇把泥巴踩出了逃逸速度。",
+    when: (ctx) => ctx.slot.activity === "pastPapers" || ctx.slot.activity === "textbook",
+    once: true,
+    options: [
+      {
+        id: "solve",
+        label: "让{a}认真算一遍",
+        check: { attr: "theory", dc: 45 },
+        win: { text: "{a}推出 R = √(h·R⊕)：这颗星球的半径只有两公里半。大家第一次觉得佩奇很危险。", fx: { self: { attrs: { theory: 2.5 } } } },
+        lose: { text: "{a}算出来的星球比地球还大。佩奇表示不背这个锅。", fx: { self: { stress: 3 } } },
+      },
+      { id: "argue", label: "争论佩奇哪来这么大的力气", win: { text: "物竞转来的同学写了一黑板动量定理，最后的结论是：佩奇不是一头普通的猪。", fx: { attrs: { theory: 0.5 }, morale: 2 } } },
+      { id: "watch", label: "放一集《小猪佩奇》减压", win: { text: "看完一集，全社都在学跳泥坑的声音。压力小了，智商好像也降了一点。", fx: { stress: -6, attrs: { knowledge: -0.3 } } } },
+    ],
+  },
+  {
+    id: "mamenchisaurus",
+    title: "马门溪龙能看见几等星",
+    text: "{a}在群里发了一道题：一颗星，人勉强看得见，马门溪龙也勉强看得见，问这颗星后来怎么了。题目没说恐龙的瞳孔有多大。",
+    once: true,
+    options: [
+      {
+        id: "pupil",
+        label: "按头骨比例估瞳孔",
+        check: { attr: "practice", dc: 40 },
+        win: { text: "{a}估出三十多毫米，比人眼多看三个半星等。全社第一次觉得古生物也在考纲里。", fx: { self: { attrs: { theory: 2, practice: 1 } }, flag: "dinosaur" } },
+        lose: { text: "{a}照着霸王龙的头骨估的。群里有人提醒：马门溪龙的头很小。", fx: { self: { stress: 3 }, flag: "dinosaur" } },
+      },
+      {
+        id: "era",
+        label: "先查马门溪龙活在什么年代",
+        check: { attr: "knowledge", dc: 38 },
+        win: { text: "侏罗纪，一亿多年前。那时候的星空和现在完全不一样，那颗星说不定早就没了。{a}觉得这道题出得很浪漫。", fx: { self: { attrs: { knowledge: 2 } }, flag: "dinosaur" } },
+        lose: { text: "{a}查到的是《侏罗纪公园》的上映年份。", fx: { morale: 2, flag: "dinosaur" } },
+      },
+      { id: "syllabus", label: "宣布古生物不在考纲里", win: { text: "群里有人发了一张图：全国物理、数学、历史、古生物、计算机、美术、书法、按计算器、常识以及天文竞赛。", fx: { morale: 3, flag: "dinosaur" } } },
+    ],
+  },
+  {
     id: "njuDream",
     title: "南大还是清北",
     text: "{a}想报南大天文系，家长只认清北。家长会后，三个人都在等你开口。",

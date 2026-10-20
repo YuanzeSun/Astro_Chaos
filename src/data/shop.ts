@@ -15,6 +15,7 @@ export const SHOP: ShopItem[] = [
   { id: "warmers", name: "一箱暖宝宝", price: 60, desc: "贴在镜头上防结露，贴在身上防冻。冬天户外不再遭罪。" },
   { id: "repellent", name: "驱蚊液", price: 40, desc: "夏天观测不再献血。" },
   { id: "papers", name: "历年真题集", price: 260, desc: "刷真题收益提高。" },
+  { id: "dino", name: "马门溪龙玩偶", price: 88, desc: "社团吉祥物。考前摸一摸，发挥稳一点。" },
   { id: "calculators", name: "一批函数计算器", price: 600, desc: "考试不怕没电。理论发挥更稳。" },
   { id: "dob", name: "八寸道布森", price: 2400, desc: "大口径，便宜，重。解锁深空巡天。", unlocks: "deepSky" },
   { id: "camera", name: "天文相机", price: 2600, desc: "制冷 CMOS。解锁变星测光。", unlocks: "photometry" },

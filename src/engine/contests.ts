@@ -87,7 +87,7 @@ export function sectionScore(g: GameState, s: Student, def: ContestDef, attr: At
   if (attr === "observe" && inDome) base = 0.6 * s.attrs.observe + 0.4 * s.attrs.knowledge + sumTrait(s, "dome");
   if (attr === "observe" && !inDome) base += (g.gear - 50) * 0.05;
   if (attr === "theory" && g.items.includes("calculators")) base += 1.5;
-  const noise = gauss(g) * (5 + sumTrait(s, "variance"));
+  const noise = gauss(g) * (5 + sumTrait(s, "variance") - (g.items.includes("dino") ? 1 : 0));
   const stress = Math.max(0, s.stress - 55) * 0.25;
   const morale = (g.morale - 50) * 0.04;
   return clamp(base + noise + sumTrait(s, "luck") - stress + morale + (p.bonus[attr] ?? 0) + g.contestBuff, 0, 100);
