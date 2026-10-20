@@ -156,4 +156,6 @@ export interface GameState {
   clock: number; // 绝对周数
   /** 月初快照，用来写月底小结 */
   monthBase?: { attrs: Attrs; stress: number; money: number };
+  /** 每个学生在本月（或刚过去的那个月）开始时的能力，界面用来显示涨了多少 */
+  monthStart?: Record<string, Attrs>;
 }

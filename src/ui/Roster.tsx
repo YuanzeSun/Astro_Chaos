@@ -25,7 +25,7 @@ export function TraitChip({ id }: { id: string }) {
   );
 }
 
-function Member({ s, year }: { s: Student; year: number }) {
+function Member({ s, year, base }: { s: Student; year: number; base?: Student["attrs"] }) {
   const gone = s.status !== "active";
   const best = s.honors.slice(-3);
   return (
@@ -50,7 +50,7 @@ function Member({ s, year }: { s: Student; year: number }) {
         <>
           <div className="meters">
             {ATTRS.map((a) => (
-              <Row key={a} label={ATTR_LABEL[a]} value={s.attrs[a]} />
+              <Row key={a} label={ATTR_LABEL[a]} value={s.attrs[a]} delta={base ? s.attrs[a] - base[a] : 0} />
             ))}
           </div>
           <div className="status-row">
@@ -74,17 +74,19 @@ function Member({ s, year }: { s: Student; year: number }) {
   );
 }
 
-function Row({ label, value }: { label: string; value: number }) {
+function Row({ label, value, delta }: { label: string; value: number; delta: number }) {
+  const shown = Math.abs(delta) >= 0.1 ? `${delta > 0 ? "+" : "−"}${Math.abs(delta).toFixed(1)}` : "";
   return (
     <>
       <span>{label}</span>
       <div className="bar">
         <i style={{ width: `${value}%` }} />
       </div>
-      <em>
+      <em className={delta < 0 ? "down" : ""}>{shown}</em>
+      <strong>
         {Math.round(value)}
         <small>{rating(value)}</small>
-      </em>
+      </strong>
     </>
   );
 }
@@ -95,7 +97,7 @@ export function Roster({ g }: { g: GameState }) {
   return (
     <div className="roster">
       {activeList.map((s) => (
-        <Member key={s.id} s={s} year={g.year} />
+        <Member key={s.id} s={s} year={g.year} base={g.monthStart?.[s.id]} />
       ))}
       {gone.map((s) => (
         <Member key={s.id} s={s} year={g.year} />

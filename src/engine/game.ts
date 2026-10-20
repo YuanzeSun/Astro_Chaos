@@ -133,6 +133,7 @@ export function startMonth(g: GameState) {
   g.phase = "running";
   g.week = 0;
   g.monthBase = snapshot(g);
+  g.monthStart = Object.fromEntries(active(g).map((s) => [s.id, { ...s.attrs }]));
 }
 
 function snapshot(g: GameState) {

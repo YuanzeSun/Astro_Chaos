@@ -12,23 +12,27 @@ export function Chat({ g }: { g: GameState }) {
   }, [last]);
   return (
     <div className="chat" ref={ref} aria-live="polite">
-      {g.chat.map((m) => {
+      {g.chat.map((m, i) => {
+        const day = i === 0 || g.chat[i - 1].stamp !== m.stamp ? <div className="chat-day">{m.stamp}</div> : null;
         if (m.from === "system") {
           return (
-            <div key={m.id} className={`sys ${m.tone ?? ""}`}>
-              <time>{m.stamp}</time>
-              {m.text}
+            <div key={m.id} className="chat-item">
+              {day}
+              <div className={`sys ${m.tone ?? ""}`}>{m.text}</div>
             </div>
           );
         }
         const student = g.students.find((s) => s.id === m.from);
         const name = student?.name ?? NPCS[m.from]?.name ?? m.from;
         return (
-          <div key={m.id} className={`msg${m.from === "me" ? " me" : ""}`}>
-            <Avatar student={student} npc={student ? undefined : m.from} />
-            <div className="bubble">
-              <small>{name}</small>
-              <p>{m.text}</p>
+          <div key={m.id} className="chat-item">
+            {day}
+            <div className={`msg${m.from === "me" ? " me" : ""}`}>
+              <Avatar student={student} npc={student ? undefined : m.from} />
+              <div className="bubble">
+                <small>{name}</small>
+                <p>{m.text}</p>
+              </div>
             </div>
           </div>
         );

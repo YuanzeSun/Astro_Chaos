@@ -113,3 +113,11 @@ export function rating(v: number) {
   if (v >= 40) return "D";
   return "E";
 }
+
+export function gearWord(v: number) {
+  if (v >= 80) return "崭新";
+  if (v >= 60) return "好用";
+  if (v >= 40) return "凑合";
+  if (v >= 20) return "有点松";
+  return "快散架";
+}

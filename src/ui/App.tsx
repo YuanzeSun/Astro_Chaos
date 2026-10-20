@@ -13,7 +13,8 @@ import { Ending } from "./Ending";
 import { loadProfile, saveProfile, type Profile } from "./profile";
 import { buy, chooseOption, closeContest, confirmDraft, dismissEvent, scoreContest, setActivity, startMonth, toggleDraft } from "../engine/game";
 import { recordGame, resolveNight } from "../engine/contests";
-import { dateLabel, nextContest, gradeName } from "../engine/calendar";
+import { dateLabel, nextContest } from "../engine/calendar";
+import { gearWord } from "../engine/students";
 import { say } from "../engine/chat";
 import { CONTESTS } from "../data/contests";
 import { ACHIEVEMENTS, newAchievements } from "../data/achievements";
@@ -127,6 +128,10 @@ export function App() {
               <b>{Math.round(g.fame)}</b>
               <span>声望</span>
             </div>
+            <div className={`vital${g.gear < 20 ? " warn" : ""}`} title={`器材 ${Math.round(g.gear)}/100`}>
+              <b>{gearWord(g.gear)}</b>
+              <span>器材</span>
+            </div>
             {upcoming ? (
               <div className="vital">
                 <b>{upcoming.weeks === 0 ? "本周" : `${upcoming.weeks} 周`}</b>
@@ -157,13 +162,13 @@ export function App() {
       <main className="layout">
         <section className={`col${tab === "roster" ? " show" : ""}`} aria-label="社员">
           <h2 className="col-title">
-            社员<span>{actives.map((s) => gradeName(s.enrollYear, g.year)).filter((v, i, a) => a.indexOf(v) === i).join(" ")}</span>
+            社员<span>{actives.length} 人</span>
           </h2>
           <Roster g={g} />
         </section>
         <section className={`col${tab === "plan" ? " show" : ""}`} aria-label="课表">
           <h2 className="col-title">
-            {dateLabel(g.year, g.month)}的课表<span>点一周，再点活动；双击清空</span>
+            {dateLabel(g.year, g.month)}
           </h2>
           <Planner
             g={g}

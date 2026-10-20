@@ -57,7 +57,7 @@ button:disabled {
 
 .sky {
   position: relative;
-  height: 230px;
+  height: 200px;
   overflow: hidden;
   border-bottom: 1px solid var(--line);
 }
@@ -171,7 +171,7 @@ button:disabled {
   display: grid;
   grid-template-columns: minmax(280px, 330px) minmax(0, 1fr) minmax(280px, 360px);
   gap: 0;
-  min-height: calc(100vh - 230px);
+  min-height: calc(100vh - 200px);
 }
 
 .col {
@@ -270,7 +270,7 @@ button:disabled {
 
 .meters {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr 2.6em auto;
   gap: 2px 8px;
   align-items: center;
   margin: 10px 0 8px;
@@ -306,12 +306,24 @@ button:disabled {
 
 .meters em {
   font-style: normal;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--good);
+}
+
+.meters em.down {
+  color: var(--redlight);
+}
+
+.meters strong {
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   min-width: 2.6em;
   text-align: right;
 }
 
-.meters em small {
+.meters strong small {
   color: var(--muted);
   margin-left: 3px;
 }
@@ -385,8 +397,15 @@ button:disabled {
   gap: 10px;
 }
 
+.week-wrap {
+  position: relative;
+  display: flex;
+}
+
 .week {
   position: relative;
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -421,6 +440,42 @@ button:disabled {
 
 .week.done {
   opacity: 0.7;
+}
+
+.week:disabled {
+  cursor: default;
+}
+
+.week-clear {
+  position: absolute;
+  top: 6px;
+  right: 30px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+
+.week-wrap:hover .week-clear,
+.week-clear:focus-visible {
+  opacity: 1;
+}
+
+.week-clear:hover {
+  color: var(--star);
+  background: var(--night-3);
+}
+
+@media (hover: none) {
+  .week-clear {
+    opacity: 1;
+  }
 }
 
 .week-head {
@@ -506,6 +561,124 @@ button:disabled {
   font-weight: 600;
 }
 
+.plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* —— 活动板 —— */
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px 10px;
+  transition: opacity 0.2s;
+}
+
+.palette.idle {
+  opacity: 0.4;
+}
+
+.palette-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.palette-col h3 {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: var(--night-2);
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.chip:hover:not(:disabled):not([aria-disabled="true"]) {
+  border-color: var(--sodium);
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--sodium);
+  background: #f0a94422;
+}
+
+.chip[aria-disabled="true"] {
+  color: var(--muted);
+  background: none;
+  border-style: dashed;
+  border-color: var(--line);
+  cursor: default;
+}
+
+.palette.idle .chip:disabled {
+  cursor: default;
+}
+
+.dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot.good {
+  background: var(--good);
+}
+
+.dot.meh {
+  background: var(--sodium);
+}
+
+.dot.bad {
+  background: var(--redlight);
+}
+
+.act-detail {
+  min-height: 92px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.act-detail.empty {
+  border-color: transparent;
+}
+
+.act-detail p {
+  margin: 4px 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.act-detail .outlook.good {
+  color: var(--good);
+}
+
+.act-detail .outlook.meh {
+  color: var(--sodium);
+}
+
+.act-detail .outlook.bad {
+  color: var(--redlight);
+}
+
 .primary {
   border: none;
   border-radius: 999px;
@@ -536,53 +709,6 @@ button:disabled {
   border-color: var(--star);
 }
 
-.cats {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-
-.cat {
-  border: none;
-  background: none;
-  padding: 4px 12px;
-  border-radius: 999px;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.cat[aria-pressed="true"] {
-  background: var(--night-3);
-  color: var(--star);
-}
-
-.acts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 8px;
-}
-
-.act {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: none;
-  text-align: left;
-}
-
-.act:hover:not(:disabled) {
-  border-color: var(--sodium);
-  background: var(--night-2);
-}
-
-.act:disabled {
-  opacity: 0.4;
-}
-
 .act-top {
   display: flex;
   justify-content: space-between;
@@ -599,14 +725,10 @@ button:disabled {
   white-space: nowrap;
 }
 
-.act p {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
 .act-gain {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
   font-size: 12px;
   color: var(--star);
 }
@@ -617,22 +739,6 @@ button:disabled {
 
 .act-gain .plus {
   color: var(--good);
-}
-
-.shelf {
-  margin-top: 26px;
-}
-
-.shelf h3 {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 0 8px;
-}
-
-.owned {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 /* —— 群聊 —— */
@@ -717,9 +823,22 @@ button:disabled {
   color: #e6cfa6;
 }
 
-.sys time {
-  margin-right: 6px;
-  opacity: 0.7;
+.chat-item {
+  display: grid;
+  gap: 8px;
+}
+
+.chat-day {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.week-act .dot {
+  display: inline-block;
+  margin: 0 6px 2px 0;
+  vertical-align: middle;
 }
 
 /* —— 弹窗 —— */
@@ -1327,7 +1446,29 @@ button:disabled {
   }
 }
 
+@media (max-width: 1400px) {
+  .palette {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .palette {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .palette {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
+  .palette {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .sky {
     height: 210px;
   }
