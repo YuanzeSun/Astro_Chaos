@@ -10,6 +10,7 @@ import { ContestModal } from "./ContestModal";
 import { ShopModal } from "./ShopModal";
 import { Settings } from "./Settings";
 import { Ending } from "./Ending";
+import { Stats } from "./Stats";
 import { loadProfile, saveProfile, type Profile } from "./profile";
 import { buy, chooseOption, closeContest, confirmDraft, dismissEvent, scoreContest, setActivity, startMonth, toggleDraft } from "../engine/game";
 import { recordGame, resolveNight } from "../engine/contests";
@@ -27,6 +28,7 @@ export function App() {
   const [profile, setProfile] = useState<Profile>(loadProfile);
   const [aiOn, setAiOn] = useState(aiEnabled);
   const [shop, setShop] = useState(false);
+  const [stats, setStats] = useState(false);
   // ChatGPT 登录回来时直接回到设置
   const [settings, setSettings] = useState(() => location.search.includes("chatgpt="));
   const [tab, setTab] = useState<Tab>("plan");
@@ -138,6 +140,9 @@ export function App() {
                 <span>距{upcoming.contest.short}</span>
               </div>
             ) : null}
+            <button type="button" className="icon-btn" onClick={() => setStats(true)}>
+              统计
+            </button>
             <button type="button" className="icon-btn" onClick={() => setSettings(true)}>
               设置
             </button>
@@ -208,6 +213,7 @@ export function App() {
           onClose={() => act(closeContest)}
         />
       ) : null}
+      {stats ? <Stats g={g} onClose={() => setStats(false)} /> : null}
       {shop ? <ShopModal g={g} onBuy={(id) => act((d) => void buy(d, id))} onClose={() => setShop(false)} /> : null}
       {settings ? (
         <Settings

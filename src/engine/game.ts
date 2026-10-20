@@ -76,6 +76,7 @@ export function confirmDraft(g: GameState) {
     const c = d.candidates.find((x) => x.student.id === id);
     if (c) enroll(g, c.student);
   }
+  if (!g.history?.length) recordHistory(g, 0);
   g.pending = null;
   nextPending(g);
 }
@@ -144,6 +145,28 @@ function snapshot(g: GameState) {
     stress: avg((s) => s.stress),
     money: g.money,
   };
+}
+
+/** 这一笔记在第几个月的月底；开学那一笔是 0。 */
+export const monthT = (year: number, month: number) => (year - 1) * MONTHS.length + month + 1;
+
+export function recordHistory(g: GameState, t: number) {
+  const team = active(g);
+  if (!team.length) return;
+  g.history ??= [];
+  if (g.history.some((p) => p.t === t)) return;
+  const avg = (f: (s: (typeof team)[number]) => number) => team.reduce((sum, s) => sum + f(s), 0) / team.length;
+  g.history.push({
+    t,
+    year: g.year,
+    month: g.month,
+    team: { theory: avg((s) => s.attrs.theory), observe: avg((s) => s.attrs.observe), practice: avg((s) => s.attrs.practice), knowledge: avg((s) => s.attrs.knowledge) },
+    stress: avg((s) => s.stress),
+    money: g.money,
+    morale: g.morale,
+    fame: g.fame,
+    members: Object.fromEntries(team.map((s) => [s.id, { attrs: { ...s.attrs }, stress: s.stress }])),
+  });
 }
 
 function monthSummary(g: GameState) {
@@ -382,6 +405,7 @@ export function buy(g: GameState, id: string) {
 
 function endMonth(g: GameState) {
   monthSummary(g);
+  recordHistory(g, monthT(g.year, g.month));
   if (g.money < 0 && g.flags.debtAt !== g.clock && active(g).length) {
     const ev = openChoice(g, g.slots[WEEKS - 1], CHOICE_MAP.debt, active(g)[0]);
     if (ev) {

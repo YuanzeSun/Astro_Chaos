@@ -127,6 +127,29 @@ export interface DraftState {
 
 export type Pending = PendingEvent | PendingContest | DraftState;
 
+/** 每个月底记一笔，统计面板画曲线用。t = 0 是开学，之后是第几个月的月底。 */
+export interface HistoryPoint {
+  t: number;
+  year: number;
+  month: number;
+  team: Attrs;
+  stress: number;
+  money: number;
+  morale: number;
+  fame: number;
+  members: Record<string, { attrs: Attrs; stress: number }>;
+}
+
+export interface ContestLogEntry {
+  t: number;
+  year: number;
+  contest: string;
+  best: number;
+  bestName: string;
+  rival: number | null;
+  award: string | null;
+}
+
 export interface GameState {
   version: 3;
   seed: number;
@@ -156,6 +179,8 @@ export interface GameState {
   clock: number; // 绝对周数
   /** 月初快照，用来写月底小结 */
   monthBase?: { attrs: Attrs; stress: number; money: number };
+  history?: HistoryPoint[];
+  contestLog?: ContestLogEntry[];
   /** 每个学生在本月（或刚过去的那个月）开始时的能力，界面用来显示涨了多少 */
   monthStart?: Record<string, Attrs>;
 }

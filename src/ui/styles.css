@@ -70,12 +70,53 @@ button:disabled {
   display: block;
 }
 
-.sky .clouds {
-  animation: drift 90s linear infinite alternate;
+.sky-weather {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-.sky .rain {
+.sky-clouds {
+  position: absolute;
+  inset: 0 -8%;
+  animation: drift 90s linear infinite alternate;
+  will-change: transform;
+}
+
+.sky-clouds span {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(34 49 73 / 0.95), rgb(34 49 73 / 0.55) 55%, rgb(34 49 73 / 0));
+}
+
+.sky-weather.fair .sky-clouds {
+  opacity: 0.55;
+}
+
+.sky-weather.rain .sky-clouds span {
+  background: radial-gradient(closest-side, rgb(27 39 56 / 0.95), rgb(27 39 56 / 0.55) 55%, rgb(27 39 56 / 0));
+}
+
+.sky-overcast {
+  position: absolute;
+  inset: 0;
+  background: rgb(26 37 54 / 0.72);
+}
+
+.sky-rain {
+  position: absolute;
+  inset: -40px -60px 0;
+  transform: rotate(12deg);
+  opacity: 0.5;
+}
+
+.sky-rain div {
+  position: absolute;
+  inset: -22px 0 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='22'%3E%3Cline x1='7' y1='0' x2='7' y2='10' stroke='%239fb4d6' stroke-width='1'/%3E%3C/svg%3E");
   animation: fall 0.6s linear infinite;
+  will-change: transform;
 }
 
 @keyframes drift {
@@ -1620,4 +1661,250 @@ button:disabled {
 .key-row input:focus {
   border-color: var(--sodium);
   outline: none;
+}
+
+/* —— 统计 —— */
+
+.card.stats {
+  width: min(1040px, 100%);
+}
+
+.stats-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.stats-head h2 {
+  margin: 0;
+}
+
+.stats-section + .stats-section {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.who {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.who .chip.gone {
+  color: var(--muted);
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.stats-row.wide {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.chart {
+  margin: 0 0 14px;
+  min-width: 0;
+}
+
+.chart figcaption {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend i.line {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.legend i.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.chart-plot {
+  position: relative;
+  width: 100%;
+}
+
+.chart-plot svg {
+  display: block;
+  overflow: visible;
+  touch-action: pan-y;
+}
+
+.chart-plot svg:focus-visible {
+  outline: 2px solid var(--sodium);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.chart .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart .axis {
+  stroke: #3b5070;
+  stroke-width: 1;
+}
+
+.chart .danger-band {
+  fill: rgb(226 85 63 / 0.08);
+}
+
+.chart .crosshair {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.chart .series {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart .end-dot {
+  stroke: var(--night-2);
+  stroke-width: 2;
+}
+
+.chart .pair-link {
+  stroke: #3b5070;
+  stroke-width: 1;
+}
+
+.chart .hit {
+  fill: transparent;
+}
+
+.chart .hit.on {
+  fill: rgb(233 236 239 / 0.04);
+}
+
+.chart .tick {
+  font-size: 11px;
+  fill: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart .tick.faint {
+  opacity: 0.7;
+}
+
+.chart .end-label {
+  font-size: 11px;
+  fill: var(--star);
+}
+
+.chart-tip {
+  position: absolute;
+  top: 8px;
+  z-index: 5;
+  min-width: 140px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--night);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px #02060c;
+  pointer-events: none;
+  font-size: 12px;
+}
+
+.tip-head {
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.tip-row {
+  display: grid;
+  grid-template-columns: 12px auto 1fr;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.6;
+}
+
+.tip-row i {
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.tip-row b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.tip-row span {
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-wrap {
+  display: grid;
+  gap: 16px;
+  max-height: 340px;
+  overflow: auto;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.stats-table th {
+  position: sticky;
+  top: 0;
+  background: var(--night-2);
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stats-table th:first-child,
+.stats-table td:first-child {
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .stats-row,
+  .stats-row.wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

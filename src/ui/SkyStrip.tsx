@@ -124,27 +124,38 @@ function Skyline({ lightPollution }: { lightPollution: boolean }) {
   );
 }
 
+const COVER: Record<WeatherId, number> = { clear: 0, fair: 2, cloudy: 5, overcast: 9, rain: 10 };
+
+/** 云和雨放在 SVG 外面的单独图层：模糊只画一次，飘动交给合成器。 */
 function Weather({ weather }: { weather: WeatherId }) {
-  const cover = { clear: 0, fair: 2, cloudy: 5, overcast: 9, rain: 10 }[weather];
-  const clouds = [];
-  for (let i = 0; i < cover; i++) {
-    const x = ((i * 397) % 1300) - 60;
-    const y = 30 + ((i * 131) % 130);
-    clouds.push(<ellipse key={i} cx={x} cy={y} rx={150 + ((i * 53) % 120)} ry={34 + ((i * 17) % 26)} />);
-  }
+  const cover = COVER[weather];
+  if (!cover) return null;
+  const clouds = Array.from({ length: cover }, (_, i) => ({
+    left: ((i * 397) % 1300) / 12 - 12,
+    top: (30 + ((i * 131) % 130)) / 2.3 - 14,
+    width: (300 + ((i * 53) % 240)) / 12,
+    height: (68 + ((i * 17) % 52)) / 2.3,
+  }));
   return (
-    <g className="weather" data-weather={weather}>
-      <g className="clouds" fill={weather === "rain" ? "#1b2738" : "#223149"} opacity={weather === "fair" ? 0.55 : 0.92} filter="url(#blur)">
-        {clouds}
-      </g>
-      {weather === "overcast" || weather === "rain" ? <rect width={W} height={HORIZON} fill="#1a2536" opacity="0.72" /> : null}
-      {weather === "rain" ? <rect className="rain" width={W} height={HORIZON} fill="url(#rain)" opacity="0.5" /> : null}
-    </g>
+    <div className={`sky-weather ${weather}`} aria-hidden="true">
+      <div className="sky-clouds">
+        {clouds.map((c, i) => (
+          <span key={i} style={{ left: `${c.left}%`, top: `${c.top}%`, width: `${c.width}%`, height: `${c.height}%` }} />
+        ))}
+      </div>
+      {weather === "overcast" || weather === "rain" ? <div className="sky-overcast" /> : null}
+      {weather === "rain" ? (
+        <div className="sky-rain">
+          <div />
+        </div>
+      ) : null}
+    </div>
   );
 }
 
 export const SkyStrip = memo(function SkyStrip({ month, week, weather, moon, lightPollution, dome }: Props) {
   return (
+    <>
     <svg className="sky-strip" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" role="img" aria-label="今晚的夜空">
       <defs>
         <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
@@ -152,26 +163,25 @@ export const SkyStrip = memo(function SkyStrip({ month, week, weather, moon, lig
           <stop offset="0.75" stopColor="#13233b" />
           <stop offset="1" stopColor={lightPollution ? "#4a3a2c" : "#22324a"} />
         </linearGradient>
-        <radialGradient id="sodium">
-          <stop offset="0" stopColor="#f0a944" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#f0a944" stopOpacity="0" />
-        </radialGradient>
         <radialGradient id="moonGlow">
           <stop offset="0" stopColor="#f4efe0" stopOpacity="0.22" />
           <stop offset="1" stopColor="#f4efe0" stopOpacity="0" />
         </radialGradient>
-        <filter id="blur" x="-20%" y="-50%" width="140%" height="200%">
-          <feGaussianBlur stdDeviation="18" />
-        </filter>
-        <pattern id="rain" width="14" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(12)">
-          <line x1="7" y1="0" x2="7" y2="10" stroke="#9fb4d6" strokeWidth="1" />
-        </pattern>
       </defs>
       <rect width={W} height={H} fill="url(#skyGrad)" />
       {dome ? null : <Stars month={month} week={week} />}
       {dome ? null : <Moon month={month} week={week} phase={moon} />}
-      <Weather weather={dome ? "clear" : weather} />
+    </svg>
+    {dome ? null : <Weather weather={weather} />}
+    <svg className="sky-strip" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs>
+        <radialGradient id="sodium">
+          <stop offset="0" stopColor="#f0a944" stopOpacity="0.45" />
+          <stop offset="1" stopColor="#f0a944" stopOpacity="0" />
+        </radialGradient>
+      </defs>
       <Skyline lightPollution={lightPollution} />
     </svg>
+    </>
   );
 });

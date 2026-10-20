@@ -151,6 +151,16 @@ export function finishContest(g: GameState, p: PendingContest): ContestResultRow
   }
 
   p.results = rows;
+  g.contestLog ??= [];
+  g.contestLog.push({
+    t: (g.year - 1) * 12 + g.month + 1,
+    year: g.year,
+    contest: def.id,
+    best: rows[0]?.score ?? 0,
+    bestName: rows[0]?.name ?? "",
+    rival: p.rival?.score ?? null,
+    award: rows[0]?.award ?? null,
+  });
   g.contestBuff = 0;
   g.stats.contests = (g.stats.contests ?? 0) + 1;
   if (p.venue === "dome" && def.sections.some((s) => s.outdoor)) g.stats.domeSwitch = (g.stats.domeSwitch ?? 0) + 1;
