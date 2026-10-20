@@ -31,6 +31,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "full", name: "满员", desc: "同时有八名在社社员。", test: (g) => activeCount(g) >= 8 },
   { id: "dinosaur", name: "古生物也在考纲里", desc: "算一算马门溪龙能看见几等星。", test: (g) => Boolean(g.flags.dinosaur) },
   { id: "physics", name: "物竞难民收容所", desc: "收留一名物竞转来的学生。", test: (g) => Boolean(g.flags.physicsRecruit) },
+  { id: "claimed", name: "本机构学员", desc: "你的学生被啵酱天文发了喜报。", test: (g) => Boolean(g.flags.claimed) },
   { id: "dean", name: "主任也来看土星", desc: "让教导主任成为天文社的粉丝。", test: (g) => Boolean(g.flags.deanFan) },
   { id: "rival", name: "已读，回复", desc: "在 IOAA 上压过陆老师的学生。", test: (g) => Boolean(g.flags.beatRivalFinal) },
   { id: "negative", name: "选错的同学请立即交卷", desc: "在倒扣分的押题里拿到负分。", test: (g) => games(g).some((x) => x.kind === "quiz-neg" && x.wrong > x.correct) },

@@ -1,6 +1,6 @@
 /** 数值旋钮，集中放在这里方便调平衡。 */
 export const BALANCE = {
-  growth: 0.66,
+  growth: 0.64,
   dimStart: 1.15,
   dimSlope: 140,
   dimFloor: 0.3,

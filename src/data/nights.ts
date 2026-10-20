@@ -49,6 +49,14 @@ export const NIGHTS: NightOption[] = [
     win: { text: "零时恒星时背熟了，时角换算能省五分钟。", bonus: { theory: 1, observe: 1 } },
   },
   {
+    id: "bojiangLive",
+    label: "听啵酱天文的考前冲刺直播",
+    contests: ["final"],
+    chance: 0.3,
+    win: { text: "讲了三个小时，前十分钟在讲题，后面全在讲他自己画的星图。有一张倒是画得挺好看。", bonus: { observe: 0.5 } },
+    lose: { text: "直播的主题是“用星座性格破解球面三角”。弹幕里有选手问了一句公式，直播间就开始了对骂。大家关掉手机睡觉了。", stress: 3 },
+  },
+  {
     id: "zenithDrill",
     label: "望远镜拆装特训",
     contests: ["final", "ioaa"],

@@ -249,6 +249,8 @@ function runActivity(g: GameState, slot: WeekSlot, a: Activity) {
     rainedOut = factor === 0;
   }
   if (["pastPapers"].includes(a.id) && g.items.includes("papers")) factor *= 1.25;
+  if (["pastPapers", "quizBank"].includes(a.id) && g.items.includes("bojiang")) factor *= 0.9;
+  if (["dataLab", "errorDrill"].includes(a.id) && g.items.includes("bojiang")) factor *= 1.12;
   if (a.id === "starHop" && g.items.includes("stellarium")) factor *= 1.2;
   if (a.cat === "实测") factor *= 0.8 + g.gear / 500;
 
