@@ -8,15 +8,12 @@ import { canUse, offered, plannedCost } from "../engine/game";
 import { schoolWeek, CN_NUM } from "../engine/calendar";
 import { MOON_GLYPH, MOON_LABEL, outdoorFactor } from "../engine/sky";
 import { ATTR_LABEL } from "../engine/students";
-import { SPEEDS, type Speed } from "./useGame";
 
 interface Props {
   g: GameState;
   onSet: (week: number, id: string | null) => void;
   onStart: () => void;
   onShop: () => void;
-  speed: Speed;
-  onSpeed: (s: Speed) => void;
 }
 
 type Outlook = "good" | "meh" | "bad" | null;
@@ -218,7 +215,7 @@ function WeekCard({ g, slot, i, focus, planning, onFocus, onClear }: {
   );
 }
 
-export function Planner({ g, onSet, onStart, onShop, speed, onSpeed }: Props) {
+export function Planner({ g, onSet, onStart, onShop }: Props) {
   const planning = g.phase === "plan";
   const [focus, setFocus] = useState(0);
   const [hover] = useState(createHover);
@@ -268,13 +265,6 @@ export function Planner({ g, onSet, onStart, onShop, speed, onSpeed }: Props) {
           本月花费 <b className="num">¥{plannedCost(g)}</b>，账上 <b className="num">¥{g.money}</b>
         </p>
         <div className="plan-actions">
-          <div className="speed" role="group" aria-label="播放速度">
-            {(Object.keys(SPEEDS) as Speed[]).map((s) => (
-              <button key={s} type="button" aria-pressed={speed === s} onClick={() => onSpeed(s)}>
-                {s}
-              </button>
-            ))}
-          </div>
           <button type="button" className="ghost" onClick={onShop} disabled={!planning}>
             器材店
           </button>

@@ -349,9 +349,19 @@ button:disabled {
   border: none;
   background: none;
   padding: 0;
-  font-size: 12px;
+  font-size: 11px;
+  white-space: nowrap;
   color: var(--muted);
   align-items: flex-end;
+}
+
+/* 列太窄、两个字放不下时竖着写 */
+.cell.head.vertical {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: -1px;
+  align-items: center;
+  justify-self: end;
 }
 
 .cell.head[aria-pressed="true"] {
@@ -1535,6 +1545,7 @@ button:disabled {
 
 .speed {
   display: flex;
+  align-items: center;
   gap: 4px;
 }
 

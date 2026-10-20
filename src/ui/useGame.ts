@@ -15,12 +15,11 @@ function load(): GameState | null {
   }
 }
 
-export const SPEEDS = { 慢: 1400, 中: 750, 快: 280 } as const;
-export type Speed = keyof typeof SPEEDS;
+/** 月份开跑以后，每过一周停多久 */
+const WEEK_MS = 1400;
 
 export function useGame() {
   const [game, setGame] = useState<GameState>(() => load() ?? newGame());
-  const [speed, setSpeed] = useState<Speed>(() => (localStorage.getItem("astro-chaos:v3:speed") as Speed) || "中");
   const saveTimer = useRef<number>(0);
 
   const act = useCallback((fn: (g: GameState) => void) => {
@@ -39,14 +38,10 @@ export function useGame() {
   }, [game]);
 
   useEffect(() => {
-    localStorage.setItem("astro-chaos:v3:speed", speed);
-  }, [speed]);
-
-  useEffect(() => {
     if (game.phase !== "running" || game.pending) return;
-    const t = window.setTimeout(() => act(tick), SPEEDS[speed]);
+    const t = window.setTimeout(() => act(tick), WEEK_MS);
     return () => window.clearTimeout(t);
-  }, [game, speed, act]);
+  }, [game, act]);
 
-  return { game, act, restart, speed, setSpeed };
+  return { game, act, restart };
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Attr, GameState, Student } from "../engine/types";
 import { ATTRS, ATTR_LABEL, rating } from "../engine/students";
 import { gradeName } from "../engine/calendar";
@@ -7,7 +7,6 @@ import { CONTEST_MAP } from "../data/contests";
 import { Avatar } from "./Avatar";
 
 const SHORT_AWARD: Record<string, string> = { 晋级决赛: "进决赛", 入选国家队: "国家队" };
-const SHORT_ATTR: Record<Attr, string> = { theory: "理", observe: "观", practice: "实", knowledge: "常" };
 
 function honorLabel(h: Student["honors"][number]) {
   return `${CONTEST_MAP[h.contest].short}${SHORT_AWARD[h.award] ?? h.award}`;
@@ -105,17 +104,38 @@ export function Roster({ g }: { g: GameState }) {
       else next.add(id);
       return next;
     });
+  // 列太窄、两个字横着放不下时竖着写。按数据列的实际宽度判断，不去改 DOM 再量
+  const headRef = useRef<HTMLDivElement>(null);
+  const [vertical, setVertical] = useState(false);
+  useLayoutEffect(() => {
+    const root = headRef.current?.parentElement;
+    if (!root) return;
+    const check = () => {
+      const track = root.querySelector<HTMLElement>(".row-main .cell");
+      const label = headRef.current?.querySelector<HTMLElement>(".cell.head");
+      if (!track || !label) return;
+      const size = parseFloat(getComputedStyle(label).fontSize) || 11;
+      setVertical(size * 2 > track.clientWidth);
+    };
+    check();
+    const ro = new ResizeObserver(check);
+    ro.observe(root);
+    const track = root.querySelector(".row-main .cell");
+    if (track) ro.observe(track);
+    return () => ro.disconnect();
+  }, [team.length]);
+
   const head = (key: SortKey, label: string) => (
-    <button key={key ?? "none"} type="button" className="cell head" aria-pressed={sort === key} onClick={() => setSort(sort === key ? null : key)} title={sort === key ? "恢复原来的顺序" : "按这一项排序"}>
+    <button key={key ?? "none"} type="button" className={`cell head${vertical ? " vertical" : ""}`} aria-pressed={sort === key} onClick={() => setSort(sort === key ? null : key)} title={sort === key ? "恢复原来的顺序" : "按这一项排序"}>
       {label}
     </button>
   );
   return (
     <div className="roster">
-      <div className="row-head">
+      <div className="row-head" ref={headRef}>
         <span className="row-name" />
-        {ATTRS.map((a) => head(a, SHORT_ATTR[a]))}
-        {head("stress", "压")}
+        {ATTRS.map((a) => head(a, ATTR_LABEL[a]))}
+        {head("stress", "压力")}
       </div>
       <ul>
         {list.map((s) => (

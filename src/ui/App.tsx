@@ -25,7 +25,7 @@ import { ai, aiEnabled, monthDigest, setAiEnabled, speakerId } from "../ai/clien
 type Tab = "roster" | "plan" | "chat";
 
 export function App() {
-  const { game: g, act, restart, speed, setSpeed } = useGame();
+  const { game: g, act, restart } = useGame();
   const [profile, setProfile] = useState<Profile>(loadProfile);
   const [aiOn, setAiOn] = useState(aiEnabled);
   const [shop, setShop] = useState(false);
@@ -182,8 +182,6 @@ export function App() {
             onSet={(w, id) => act((d) => setActivity(d, w, id))}
             onStart={() => act(startMonth)}
             onShop={() => setShop(true)}
-            speed={speed}
-            onSpeed={setSpeed}
           />
         </section>
         <section className={`col${tab === "chat" ? " show" : ""}`} aria-label="群聊">
