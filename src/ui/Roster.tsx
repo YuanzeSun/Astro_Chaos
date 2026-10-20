@@ -1,4 +1,5 @@
-import type { GameState, Student } from "../engine/types";
+import { useState } from "react";
+import type { Attr, GameState, Student } from "../engine/types";
 import { ATTRS, ATTR_LABEL, rating } from "../engine/students";
 import { gradeName } from "../engine/calendar";
 import { TRAIT_MAP } from "../data/traits";
@@ -6,10 +7,10 @@ import { CONTEST_MAP } from "../data/contests";
 import { Avatar } from "./Avatar";
 
 const SHORT_AWARD: Record<string, string> = { 晋级决赛: "进决赛", 入选国家队: "国家队" };
+const SHORT_ATTR: Record<Attr, string> = { theory: "理", observe: "观", practice: "实", knowledge: "常" };
 
 function honorLabel(h: Student["honors"][number]) {
-  const c = CONTEST_MAP[h.contest];
-  return `${c.short}${SHORT_AWARD[h.award] ?? h.award}`;
+  return `${CONTEST_MAP[h.contest].short}${SHORT_AWARD[h.award] ?? h.award}`;
 }
 
 export function TraitChip({ id }: { id: string }) {
@@ -25,83 +26,113 @@ export function TraitChip({ id }: { id: string }) {
   );
 }
 
-function Member({ s, year, base }: { s: Student; year: number; base?: Student["attrs"] }) {
-  const gone = s.status !== "active";
-  const best = s.honors.slice(-3);
+type SortKey = Attr | "stress" | null;
+
+function Row({ s, g, open, onToggle }: { s: Student; g: GameState; open: boolean; onToggle: () => void }) {
+  const base = g.monthStart?.[s.id];
+  const best = s.honors[s.honors.length - 1];
+  const stressCls = s.stress >= 95 ? "hot" : s.stress >= 75 ? "warm" : "";
   return (
-    <article className={`member${gone ? " gone" : ""}`}>
-      <div className="member-head">
-        <Avatar student={s} />
-        <div className="member-name">
+    <li className={`row${open ? " open" : ""}`}>
+      <button type="button" className="row-main" onClick={onToggle} aria-expanded={open}>
+        <Avatar student={s} size={22} />
+        <span className="row-name">
           <b>{s.name}</b>
-          <small>{gone ? s.leftNote : gradeName(s.enrollYear, year)}</small>
-          {best.length ? (
+          <small>{best ? honorLabel(best) : gradeName(s.enrollYear, g.year)}</small>
+        </span>
+        {ATTRS.map((a) => (
+          <span key={a} className="cell" title={`${ATTR_LABEL[a]} ${s.attrs[a].toFixed(1)}`}>
+            <b>{Math.round(s.attrs[a])}</b>
+            <i style={{ width: `${s.attrs[a]}%` }} />
+          </span>
+        ))}
+        <span className={`cell stress ${stressCls}`} title={`压力 ${Math.round(s.stress)}`}>
+          <b>{Math.round(s.stress)}</b>
+          <i style={{ width: `${Math.min(100, s.stress)}%` }} />
+        </span>
+      </button>
+      {open ? (
+        <div className="row-more">
+          <div className="row-stats">
+            {ATTRS.map((a) => {
+              const d = base ? s.attrs[a] - base[a] : 0;
+              return (
+                <span key={a}>
+                  {ATTR_LABEL[a]} {s.attrs[a].toFixed(1)}
+                  <small> {rating(s.attrs[a])}</small>
+                  {Math.abs(d) >= 0.1 ? <em className={d < 0 ? "down" : ""}>{`${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}`}</em> : null}
+                </span>
+              );
+            })}
+          </div>
+          <div className="row-bars">
+            <span>文化课</span>
+            <div className="bar grades">
+              <i style={{ width: `${s.grades}%` }} />
+            </div>
+            <em>{Math.round(s.grades)}</em>
+          </div>
+          {s.honors.length ? (
             <div className="honors">
-              {best.map((h, i) => (
+              {s.honors.map((h, i) => (
                 <span className="honor" key={i}>
                   {honorLabel(h)}
                 </span>
               ))}
             </div>
           ) : null}
-        </div>
-      </div>
-      {gone ? null : (
-        <>
-          <div className="meters">
-            {ATTRS.map((a) => (
-              <Row key={a} label={ATTR_LABEL[a]} value={s.attrs[a]} delta={base ? s.attrs[a] - base[a] : 0} />
-            ))}
-          </div>
-          <div className="status-row">
-            <span>压力</span>
-            <div className="bar stress" title={`压力 ${Math.round(s.stress)}`}>
-              <i style={{ width: `${Math.min(100, s.stress)}%` }} />
-            </div>
-            <span>文化课</span>
-            <div className="bar grades" title={`文化课 ${Math.round(s.grades)}`}>
-              <i style={{ width: `${s.grades}%` }} />
-            </div>
-          </div>
           <div className="traits">
             {s.traits.map((t) => (
               <TraitChip key={t} id={t} />
             ))}
           </div>
-        </>
-      )}
-    </article>
-  );
-}
-
-function Row({ label, value, delta }: { label: string; value: number; delta: number }) {
-  const shown = Math.abs(delta) >= 0.1 ? `${delta > 0 ? "+" : "−"}${Math.abs(delta).toFixed(1)}` : "";
-  return (
-    <>
-      <span>{label}</span>
-      <div className="bar">
-        <i style={{ width: `${value}%` }} />
-      </div>
-      <em className={delta < 0 ? "down" : ""}>{shown}</em>
-      <strong>
-        {Math.round(value)}
-        <small>{rating(value)}</small>
-      </strong>
-    </>
+        </div>
+      ) : null}
+    </li>
   );
 }
 
 export function Roster({ g }: { g: GameState }) {
-  const activeList = g.students.filter((s) => s.status === "active");
+  const [open, setOpen] = useState<Set<string>>(() => new Set());
+  const [sort, setSort] = useState<SortKey>(null);
+  const team = g.students.filter((s) => s.status === "active");
   const gone = g.students.filter((s) => s.status !== "active");
+  const list = sort ? [...team].sort((a, b) => (sort === "stress" ? b.stress - a.stress : b.attrs[sort] - a.attrs[sort])) : team;
+  const toggle = (id: string) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  const head = (key: SortKey, label: string) => (
+    <button key={key ?? "none"} type="button" className="cell head" aria-pressed={sort === key} onClick={() => setSort(sort === key ? null : key)} title={sort === key ? "恢复原来的顺序" : "按这一项排序"}>
+      {label}
+    </button>
+  );
   return (
     <div className="roster">
-      {activeList.map((s) => (
-        <Member key={s.id} s={s} year={g.year} base={g.monthStart?.[s.id]} />
-      ))}
-      {gone.map((s) => (
-        <Member key={s.id} s={s} year={g.year} />
-      ))}
+      <div className="row-head">
+        <span className="row-name" />
+        {ATTRS.map((a) => head(a, SHORT_ATTR[a]))}
+        {head("stress", "压")}
+      </div>
+      <ul>
+        {list.map((s) => (
+          <Row key={s.id} s={s} g={g} open={open.has(s.id)} onToggle={() => toggle(s.id)} />
+        ))}
+      </ul>
+      {gone.length ? (
+        <p className="left-note">
+          离开的：
+          {gone.map((s, i) => (
+            <span key={s.id}>
+              {i ? "、" : ""}
+              {s.name}（{s.leftNote}）
+            </span>
+          ))}
+        </p>
+      ) : null}
     </div>
   );
 }

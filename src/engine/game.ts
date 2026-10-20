@@ -1,4 +1,4 @@
-import { between, chance, clamp, newSeed, pick, rand, sample } from "./rng";
+import { between, chance, clamp, newSeed, pick, rand, sample, weighted } from "./rng";
 import type { DraftState, GameState, Pending, WeekSlot } from "./types";
 import { absoluteWeek, gradeOf, isSummerBreak, isWinterBreak, MONTHS, schoolWeek, YEARS, WEEKS } from "./calendar";
 import { active, addGrades, addStress, ATTR_LABEL, ATTRS, createStudent, hasTrait, outdoorScale, train } from "./students";
@@ -7,7 +7,7 @@ import { actualWeather, moonPhase, outdoorFactor, rollWeather, skyEventFor } fro
 import { react, say, system } from "./chat";
 import { openChoice, pickChoiceEvent, pickPassive, resolveChoice, CHOICE_MAP } from "./events";
 import { finishContest, newRivalStudent, openContest } from "./contests";
-import { ACTIVITY_MAP, type Activity } from "../data/activities";
+import { ACTIVITIES, ACTIVITY_MAP, type Activity } from "../data/activities";
 import { CONTEST_MAP, contestAt } from "../data/contests";
 import { SHOP_MAP } from "../data/shop";
 import { SKY_EVENT_MAP, WEATHER } from "../data/sky";
@@ -97,8 +97,9 @@ function setupMonth(g: GameState, grant = true) {
       contest: contest?.id,
     };
   });
+  g.offer = rollOffer(g);
   for (const slot of g.slots) {
-    if (slot.activity && !canUse(g, ACTIVITY_MAP[slot.activity])) slot.activity = null;
+    if (slot.activity && (!canUse(g, ACTIVITY_MAP[slot.activity]) || !offered(g, slot.activity))) slot.activity = null;
   }
   g.week = 0;
   g.clock = absoluteWeek(g.year, g.month, 0);
@@ -112,6 +113,38 @@ function setupMonth(g: GameState, grant = true) {
   for (const id of sky) system(g, `天象预告：${SKY_EVENT_MAP[id!].name}。`, "info");
 }
 
+/** 这个月的活动：基础的都有；买了器材的都有；季节和天象的按月份出；其余随机抽几个。 */
+const ROTATING = 6;
+
+function rollOffer(g: GameState): string[] {
+  const skies = new Set(g.slots.map((s) => s.sky).filter(Boolean));
+  const keep: string[] = [];
+  const pool: Activity[] = [];
+  for (const a of ACTIVITIES) {
+    if (a.basic) keep.push(a.id);
+    else if (a.requires && g.items.includes(a.requires)) keep.push(a.id);
+    else if (a.sky) {
+      if (a.sky.some((id) => skies.has(id))) keep.push(a.id);
+    } else if (a.months) {
+      if (a.months.includes(g.month)) keep.push(a.id);
+    } else if (!a.requires) pool.push(a);
+  }
+  // 九月是招新季
+  if (g.month === 0) keep.push("recruit");
+  const rest = pool.filter((a) => !keep.includes(a.id));
+  const picked: string[] = [];
+  while (picked.length < ROTATING && rest.length) {
+    const a = weighted(g, rest, (x) => x.weight ?? 1);
+    if (!a) break;
+    picked.push(a.id);
+    rest.splice(rest.indexOf(a), 1);
+  }
+  const offer = new Set([...keep, ...picked]);
+  return ACTIVITIES.filter((a) => offer.has(a.id)).map((a) => a.id);
+}
+
+export const offered = (g: GameState, id: string) => !g.offer || g.offer.includes(id);
+
 export function canUse(g: GameState, a: Activity | undefined) {
   if (!a) return false;
   return !a.requires || g.items.includes(a.requires);
@@ -121,7 +154,9 @@ export function setActivity(g: GameState, week: number, id: string | null) {
   if (g.phase !== "plan") return;
   const slot = g.slots[week];
   if (!slot || slot.contest) return;
-  if (id && !canUse(g, ACTIVITY_MAP[id])) return;
+  if (id && (!canUse(g, ACTIVITY_MAP[id]) || !offered(g, id))) return;
+  const a = id ? ACTIVITY_MAP[id] : undefined;
+  if (a?.once && g.slots.some((s, i) => i !== week && s.activity === id)) return;
   slot.activity = id;
 }
 
@@ -395,6 +430,7 @@ export function buy(g: GameState, id: string) {
   if (item.needs && !g.items.includes(item.needs)) return false;
   g.money -= item.price;
   g.items.push(id);
+  if (item.unlocks && g.offer && !g.offer.includes(item.unlocks)) g.offer = ACTIVITIES.filter((a) => g.offer!.includes(a.id) || a.id === item.unlocks).map((a) => a.id);
   if (item.price >= 300) g.flags.newGear = g.clock;
   system(g, `购入：${item.name}。`, "good");
   react(g, "buy", 1);

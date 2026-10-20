@@ -1,15 +1,17 @@
-import { newGame, toggleDraft, confirmDraft, setActivity, startMonth, tick, chooseOption, dismissEvent, closeContest, buy, canUse } from "../src/engine/game";
+import { newGame, toggleDraft, confirmDraft, setActivity, startMonth, tick, chooseOption, dismissEvent, closeContest, buy, canUse, offered } from "../src/engine/game";
 import type { GameState } from "../src/engine/types";
-import { ACTIVITIES, ACTIVITY_MAP } from "../src/data/activities";
+import { ACTIVITIES } from "../src/data/activities";
 import { CONTEST_MAP } from "../src/data/contests";
 import { recordGame, resolveNight } from "../src/engine/contests";
 import { SHOP } from "../src/data/shop";
 import { active } from "../src/engine/students";
 import { rand } from "../src/engine/rng";
+import { WEATHER } from "../src/data/sky";
+import { outdoorFactor } from "../src/engine/sky";
 
 export type Policy = (g: GameState, week: number) => string;
 
-/** 简单的“认真教练”：缺什么补什么，压力高就休息。 */
+/** 简单的“认真教练”：缺什么补什么，压力高就休息，按当月能选的活动挑收益最高的。 */
 export const smartPolicy: Policy = (g, w) => {
   const team = active(g);
   const avgStress = team.reduce((s, x) => s + x.stress, 0) / Math.max(1, team.length);
@@ -18,22 +20,28 @@ export const smartPolicy: Policy = (g, w) => {
   if (avgGrades < 52) return "selfStudy";
   if (g.money < 300 && w === 0) return "sponsor";
   const slot = g.slots[w];
-  const clearish = slot.forecast === "clear" || slot.forecast === "fair";
   const attrs = ["theory", "observe", "practice", "knowledge"] as const;
   const avg = (a: (typeof attrs)[number]) => team.reduce((s, x) => s + x.attrs[a], 0) / Math.max(1, team.length);
   const weakest = [...attrs].sort((a, b) => avg(a) - avg(b))[0];
-  const options: Record<string, string[]> = {
-    theory: ["sphereTrig", "pastPapers", "textbook"],
-    observe: clearish ? ["deepSky", "fieldTrip", "rooftop"] : ["starHop", "planetarium"],
-    practice: ["photometry", "dataLab", "errorDrill"],
-    knowledge: ["quizBank", "magazine"],
+  const options = ACTIVITIES.filter(
+    (a) =>
+      canUse(g, a) &&
+      offered(g, a.id) &&
+      g.money - a.cost >= 400 &&
+      !(a.once && g.slots.some((s, i) => i !== w && s.activity === a.id)) &&
+      (a.gains[weakest] ?? 0) > 0,
+  );
+  const value = (a: (typeof options)[number]) => {
+    let v = (a.gains[weakest] ?? 0) + 0.3 * Object.values(a.gains).reduce((x, y) => x + (y ?? 0), 0) - 0.15 * Math.max(0, a.stress);
+    if (a.outdoor) v *= a.daytime ? WEATHER[slot.forecast].outdoor : outdoorFactor(slot.forecast, slot.moon, a.moonLoving);
+    return v;
   };
-  const pickable = options[weakest].filter((id) => canUse(g, ACTIVITY_MAP[id]) && g.money >= ACTIVITY_MAP[id].cost);
-  return pickable[0] ?? "starHop";
+  options.sort((a, b) => value(b) - value(a));
+  return options[0]?.id ?? "starHop";
 };
 
 export const randomPolicy: Policy = (g) => {
-  const usable = ACTIVITIES.filter((a) => canUse(g, a));
+  const usable = ACTIVITIES.filter((a) => canUse(g, a) && offered(g, a.id));
   return usable[Math.floor(rand(g) * usable.length)].id;
 };
 

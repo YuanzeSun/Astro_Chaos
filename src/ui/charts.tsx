@@ -82,17 +82,23 @@ interface LineProps {
   zero?: boolean;
   /** 要提醒的区间，画成一条淡色带子 */
   band?: [number, number];
+  /** 小尺寸：少写刻度，图例缩在线尾 */
+  compact?: boolean;
+  /** 横向的参考线，比如奖线 */
+  refs?: { v: number; label: string }[];
 }
 
-export function LineChart({ title, series, x, height = 200, domain, format = (v) => v.toFixed(1), zero, band }: LineProps) {
+export function LineChart({ title, series, x, height = 200, domain, format = (v) => v.toFixed(1), zero, band, compact: small, refs }: LineProps) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const all = series.flatMap((s) => s.values.filter((v): v is number => v !== null));
   if (!all.length) return null;
   const { lo, hi, ticks } = domain ? { lo: domain[0], hi: domain[1], ticks: niceTicks(domain[0], domain[1]).ticks } : niceTicks(Math.min(...all, ...(zero ? [0] : [])), Math.max(...all, ...(zero ? [0] : [])));
-  const pw = width - PAD.l - PAD.r;
+  const padL = small ? 6 : PAD.l;
+  const padR = small ? 62 : PAD.r;
+  const pw = width - padL - padR;
   const ph = height - PAD.t - PAD.b;
-  const sx = (i: number) => PAD.l + (x.length <= 1 ? pw / 2 : (i / (x.length - 1)) * pw);
+  const sx = (i: number) => padL + (x.length <= 1 ? pw / 2 : (i / (x.length - 1)) * pw);
   const sy = (v: number) => PAD.t + (1 - (v - lo) / (hi - lo || 1)) * ph;
 
   const paths = series.map((s) => {
@@ -128,7 +134,7 @@ export function LineChart({ title, series, x, height = 200, domain, format = (v)
   const indexAt = (clientX: number, el: Element) => {
     const rect = el.getBoundingClientRect();
     const px = clientX - rect.left;
-    const i = Math.round(((px - PAD.l) / (pw || 1)) * (x.length - 1));
+    const i = Math.round(((px - padL) / (pw || 1)) * (x.length - 1));
     return Math.max(0, Math.min(x.length - 1, i));
   };
   const onMove = (e: PointerEvent<SVGSVGElement>) => setHover(indexAt(e.clientX, e.currentTarget));
@@ -141,8 +147,8 @@ export function LineChart({ title, series, x, height = 200, domain, format = (v)
   };
 
   return (
-    <figure className="chart">
-      <figcaption>{title}</figcaption>
+    <figure className={`chart${small ? " small" : ""}`}>
+      {title ? <figcaption>{title}</figcaption> : null}
       <Legend series={series} />
       <div className="chart-plot" ref={ref}>
         <svg
@@ -156,12 +162,20 @@ export function LineChart({ title, series, x, height = 200, domain, format = (v)
           onKeyDown={onKey}
           onBlur={() => setHover(null)}
         >
-          {band ? <rect x={PAD.l} width={pw} y={sy(Math.min(band[1], hi))} height={sy(band[0]) - sy(Math.min(band[1], hi))} className="danger-band" /> : null}
-          {ticks.map((t) => (
+          {band ? <rect x={padL} width={pw} y={sy(Math.min(band[1], hi))} height={sy(band[0]) - sy(Math.min(band[1], hi))} className="danger-band" /> : null}
+          {(small ? [] : ticks).map((t) => (
             <g key={t}>
-              <line x1={PAD.l} x2={width - PAD.r} y1={sy(t)} y2={sy(t)} className={zero && t === 0 ? "axis" : "grid"} />
-              <text x={PAD.l - 8} y={sy(t) + 4} textAnchor="end" className="tick">
+              <line x1={padL} x2={width - padR} y1={sy(t)} y2={sy(t)} className={zero && t === 0 ? "axis" : "grid"} />
+              <text x={padL - 6} y={sy(t) + 4} textAnchor="end" className="tick">
                 {compact(t)}
+              </text>
+            </g>
+          ))}
+          {refs?.map((r) => (
+            <g key={r.label}>
+              <line x1={padL} x2={width - padR} y1={sy(r.v)} y2={sy(r.v)} className="ref" />
+              <text x={width - padR + 6} y={sy(r.v) + 4} className="ref-label">
+                {r.label}
               </text>
             </g>
           ))}
@@ -179,7 +193,7 @@ export function LineChart({ title, series, x, height = 200, domain, format = (v)
           {ends.map((e) => (
             <g key={e.s.key}>
               <circle cx={sx(e.i)} cy={e.y} r={4} fill={e.s.color} className="end-dot" />
-              {!crowded && series.length > 1 ? (
+              {!crowded && series.length > 1 && !small ? (
                 <text x={sx(e.i) + 8} y={e.y + 4} className="end-label">
                   {e.s.name}
                 </text>

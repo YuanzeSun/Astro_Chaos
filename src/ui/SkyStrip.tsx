@@ -1,5 +1,5 @@
-import { memo, useMemo } from "react";
-import sky from "../data/sky.json";
+import { memo, useEffect, useRef, useState } from "react";
+import sky_ from "../data/sky.json";
 import type { MoonPhase, WeatherId } from "../engine/types";
 import { altAz, eclipticDec, eveningLst, starColor, starRadius, sunRa } from "./skyMath";
 
@@ -23,27 +23,45 @@ interface Props {
   dome: boolean;
 }
 
-function Stars({ month, week }: { month: number; week: number }) {
-  const lst = eveningLst(month, week);
-  const stars = useMemo(
-    () =>
-      (sky.stars as number[][])
-        .map(([ra, dec, mag, bv]) => {
-          const { alt, az } = altAz(ra, dec, lst);
-          if (alt < 1 || Math.abs(az) > AZ_SPAN) return null;
-          const p = project(alt, az);
-          // 低空大气消光
-          const fade = Math.min(1, alt / 14);
-          return { ...p, r: starRadius(mag, 0.95), c: starColor(bv), o: (0.45 + 0.55 * fade) * (mag < 4 ? 1 : 0.7) };
-        })
-        .filter(Boolean) as { x: number; y: number; r: number; c: string; o: number }[],
-    [lst],
-  );
-  const lines = useMemo(() => {
-    const out: string[] = [];
-    for (const segs of Object.values(sky.lines) as number[][][][]) {
+/** 星星、星座连线、月亮画在一张画布上：两千多颗星如果都是 DOM 节点，页面别处一动就会拖慢。 */
+function SkyCanvas({ month, week, moon, lightPollution, dome }: { month: number; week: number; moon: MoonPhase; lightPollution: boolean; dome: boolean }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setSize({ w: Math.round(e.contentRect.width), h: Math.round(e.contentRect.height) }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !size || !size.w || !size.h) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    el.width = Math.round(size.w * dpr);
+    el.height = Math.round(size.h * dpr);
+    const ctx = el.getContext("2d");
+    if (!ctx) return;
+    // 和 SVG 的 preserveAspectRatio="xMidYMax slice" 对齐，好跟前景的楼对上
+    const k = Math.max(size.w / W, size.h / H);
+    ctx.setTransform(dpr * k, 0, 0, dpr * k, (dpr * (size.w - W * k)) / 2, dpr * (size.h - H * k));
+
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, "#0a1525");
+    sky.addColorStop(0.75, "#13233b");
+    sky.addColorStop(1, lightPollution ? "#4a3a2c" : "#22324a");
+    ctx.fillStyle = sky;
+    ctx.fillRect(-W, -H, W * 3, H * 2);
+    if (dome) return;
+
+    const lst = eveningLst(month, week);
+    ctx.strokeStyle = "rgba(159, 180, 214, 0.16)";
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    for (const segs of Object.values(sky_.lines) as number[][][][]) {
       for (const seg of segs) {
-        let d = "";
         let pen = false;
         for (const [ra, dec] of seg) {
           const { alt, az } = altAz(ra, dec, lst);
@@ -52,45 +70,55 @@ function Stars({ month, week }: { month: number; week: number }) {
             continue;
           }
           const p = project(alt, az);
-          d += `${pen ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+          if (pen) ctx.lineTo(p.x, p.y);
+          else ctx.moveTo(p.x, p.y);
           pen = true;
         }
-        if (d) out.push(d);
       }
     }
-    return out.join("");
-  }, [lst]);
-  return (
-    <g>
-      <path d={lines} stroke="#9fb4d6" strokeOpacity="0.16" strokeWidth="0.8" fill="none" />
-      {stars.map((s, i) => (
-        <circle key={i} cx={s.x} cy={s.y} r={s.r} fill={s.c} opacity={s.o} />
-      ))}
-    </g>
-  );
-}
+    ctx.stroke();
 
-function Moon({ month, week, phase }: { month: number; week: number; phase: MoonPhase }) {
-  if (phase === 0) return null;
-  const elong = [0, 90, 180, 270][phase];
-  const ra = (sunRa(month, week) + elong) % 360;
-  const { alt, az } = altAz(ra, eclipticDec(ra), eveningLst(month, week));
-  if (alt < 3 || Math.abs(az) > AZ_SPAN) return null;
-  const p = project(alt, az);
-  const r = 11;
-  // 上弦亮在西侧（右），下弦亮在东侧（左）
-  const lit = phase === 2 ? null : phase === 1 ? 1 : -1;
-  return (
-    <g>
-      <circle cx={p.x} cy={p.y} r={r * 5} fill="url(#moonGlow)" />
-      <circle cx={p.x} cy={p.y} r={r} fill="#28374e" />
-      {lit === null ? (
-        <circle cx={p.x} cy={p.y} r={r} fill="#f4efe0" />
-      ) : (
-        <path d={`M${p.x} ${p.y - r} A${r} ${r} 0 0 ${lit > 0 ? 1 : 0} ${p.x} ${p.y + r} A1 ${r} 0 0 ${lit > 0 ? 0 : 1} ${p.x} ${p.y - r}Z`} fill="#f4efe0" />
-      )}
-    </g>
-  );
+    for (const [ra, dec, mag, bv] of sky_.stars as number[][]) {
+      const { alt, az } = altAz(ra, dec, lst);
+      if (alt < 1 || Math.abs(az) > AZ_SPAN) continue;
+      const p = project(alt, az);
+      const fade = Math.min(1, alt / 14);
+      ctx.globalAlpha = (0.45 + 0.55 * fade) * (mag < 4 ? 1 : 0.7);
+      ctx.fillStyle = starColor(bv);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, starRadius(mag, 0.95), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    if (moon === 0) return;
+    const ra = (sunRa(month, week) + [0, 90, 180, 270][moon]) % 360;
+    const { alt, az } = altAz(ra, eclipticDec(ra), lst);
+    if (alt < 3 || Math.abs(az) > AZ_SPAN) return;
+    const { x, y } = project(alt, az);
+    const r = 11;
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, r * 5);
+    glow.addColorStop(0, "rgba(244, 239, 224, 0.22)");
+    glow.addColorStop(1, "rgba(244, 239, 224, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+    ctx.fillStyle = "#28374e";
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#f4efe0";
+    ctx.beginPath();
+    if (moon === 2) ctx.arc(x, y, r, 0, Math.PI * 2);
+    else {
+      // 上弦亮在西侧（右），下弦亮在东侧（左）
+      const right = moon === 1;
+      ctx.arc(x, y, r, -Math.PI / 2, Math.PI / 2, !right);
+      ctx.ellipse(x, y, 1, r, 0, Math.PI / 2, -Math.PI / 2, !right);
+    }
+    ctx.fill();
+  }, [size, month, week, moon, lightPollution, dome]);
+
+  return <canvas ref={ref} className="sky-strip" role="img" aria-label="今晚的夜空" />;
 }
 
 function Skyline({ lightPollution }: { lightPollution: boolean }) {
@@ -156,22 +184,7 @@ function Weather({ weather }: { weather: WeatherId }) {
 export const SkyStrip = memo(function SkyStrip({ month, week, weather, moon, lightPollution, dome }: Props) {
   return (
     <>
-    <svg className="sky-strip" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" role="img" aria-label="今晚的夜空">
-      <defs>
-        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#0a1525" />
-          <stop offset="0.75" stopColor="#13233b" />
-          <stop offset="1" stopColor={lightPollution ? "#4a3a2c" : "#22324a"} />
-        </linearGradient>
-        <radialGradient id="moonGlow">
-          <stop offset="0" stopColor="#f4efe0" stopOpacity="0.22" />
-          <stop offset="1" stopColor="#f4efe0" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect width={W} height={H} fill="url(#skyGrad)" />
-      {dome ? null : <Stars month={month} week={week} />}
-      {dome ? null : <Moon month={month} week={week} phase={moon} />}
-    </svg>
+    <SkyCanvas month={month} week={week} moon={moon} lightPollution={lightPollution} dome={dome} />
     {dome ? null : <Weather weather={weather} />}
     <svg className="sky-strip" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMax slice" aria-hidden="true">
       <defs>

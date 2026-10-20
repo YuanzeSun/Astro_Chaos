@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { newGame } from "../src/engine/game";
-import { simulate, smartPolicy, randomPolicy } from "./sim";
+import { simulate, simulateFull, smartPolicy, randomPolicy } from "./sim";
 import { questionsFor } from "../src/engine/minigames";
 import { QUIZ } from "../src/data/quiz";
 import { CHOICE_EVENTS } from "../src/data/events";
@@ -8,7 +8,7 @@ import { PASSIVE_EVENTS } from "../src/data/passives";
 import { SYSTEM_EVENTS } from "../src/data/systemEvents";
 import { TRAIT_MAP } from "../src/data/traits";
 import { SHOP_MAP } from "../src/data/shop";
-import { ACTIVITIES } from "../src/data/activities";
+import { ACTIVITIES, ACTIVITY_MAP, CATEGORIES } from "../src/data/activities";
 import type { GameKind } from "../src/data/contests";
 
 describe("引擎", () => {
@@ -81,6 +81,16 @@ describe("内容", () => {
       ...PASSIVE_EVENTS.map((e) => e.text),
     ];
     for (const t of texts) expect(t.replace(/\{a\}|\{b\}/g, "")).not.toMatch(/\{\w+\}/);
+  });
+
+  it("每个月每一类都有活动可选，而且基础活动都在", () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const r = simulateFull(seed, smartPolicy);
+      expect(r.offer?.length ?? 0).toBeGreaterThan(0);
+    }
+    const g = newGame(5);
+    for (const cat of CATEGORIES) expect(g.offer!.some((id) => ACTIVITY_MAP[id].cat === cat), cat).toBe(true);
+    for (const a of ACTIVITIES) if (a.basic) expect(g.offer).toContain(a.id);
   });
 
   it("活动解锁需要的器材都在商店里", () => {

@@ -11,6 +11,7 @@ import { ShopModal } from "./ShopModal";
 import { Settings } from "./Settings";
 import { Ending } from "./Ending";
 import { Stats } from "./Stats";
+import { Outlook } from "./Outlook";
 import { loadProfile, saveProfile, type Profile } from "./profile";
 import { buy, chooseOption, closeContest, confirmDraft, dismissEvent, scoreContest, setActivity, startMonth, toggleDraft } from "../engine/game";
 import { recordGame, resolveNight } from "../engine/contests";
@@ -166,6 +167,7 @@ export function App() {
 
       <main className="layout">
         <section className={`col${tab === "roster" ? " show" : ""}`} aria-label="社员">
+          <Outlook g={g} />
           <h2 className="col-title">
             社员<span>{actives.length} 人</span>
           </h2>

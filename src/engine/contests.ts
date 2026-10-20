@@ -95,7 +95,22 @@ export function sectionScore(g: GameState, s: Student, def: ContestDef, attr: At
 
 /** 对手学校的王牌，随时间变强。 */
 export function rivalPower(g: GameState) {
-  return 36 + g.clock * 0.36 + g.rival.offset;
+  return rivalAt(g, g.clock);
+}
+
+export function rivalAt(g: GameState, clock: number) {
+  return 36 + clock * 0.36 + g.rival.offset;
+}
+
+/** 不算运气、押题和天气的期望成绩，给走势图用。 */
+export function projectedScore(def: ContestDef, attrs: Student["attrs"], stress: number, morale: number) {
+  let score = 0;
+  for (const sec of def.sections) {
+    let base = attrs[sec.attr];
+    if (sec.attr === "observe" && sec.dome) base = 0.6 * attrs.observe + 0.4 * attrs.knowledge;
+    score += base * sec.weight;
+  }
+  return Math.max(0, Math.min(100, score - Math.max(0, stress - 55) * 0.25 + (morale - 50) * 0.04));
 }
 
 export function finishContest(g: GameState, p: PendingContest): ContestResultRow[] {

@@ -165,6 +165,8 @@ export interface GameState {
   items: string[];
   students: Student[];
   slots: WeekSlot[];
+  /** 这个月能选的活动 */
+  offer?: string[];
   chat: ChatMessage[];
   chatSeq: number;
   pending: Pending | null;

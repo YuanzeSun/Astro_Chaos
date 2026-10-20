@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState, useSyncExternalStore } from "react";
 import type { Attr, GameState, WeekSlot } from "../engine/types";
-import { ACTIVITIES, ACTIVITY_MAP, CATEGORIES, type Activity } from "../data/activities";
+import { ACTIVITIES, ACTIVITY_MAP, CATEGORIES, isSpecial, type Activity } from "../data/activities";
 import { CONTEST_MAP } from "../data/contests";
 import { SKY_EVENT_MAP, WEATHER } from "../data/sky";
 import { SHOP_MAP } from "../data/shop";
-import { canUse, plannedCost } from "../engine/game";
+import { canUse, offered, plannedCost } from "../engine/game";
 import { schoolWeek, CN_NUM } from "../engine/calendar";
 import { MOON_GLYPH, MOON_LABEL, outdoorFactor } from "../engine/sky";
 import { ATTR_LABEL } from "../engine/students";
@@ -20,6 +20,25 @@ interface Props {
 }
 
 type Outlook = "good" | "meh" | "bad" | null;
+
+/** 悬停在哪个活动上。放在 React state 外面，只有详情栏订阅它，鼠标移动时不重画整个课表。 */
+function createHover() {
+  let id: string | null = null;
+  const subs = new Set<() => void>();
+  return {
+    get: () => id,
+    set(next: string | null) {
+      if (next === id) return;
+      id = next;
+      subs.forEach((f) => f());
+    },
+    subscribe(f: () => void) {
+      subs.add(f);
+      return () => subs.delete(f);
+    },
+  };
+}
+type HoverStore = ReturnType<typeof createHover>;
 
 /** 按这一周的预报和月相，户外活动大概会怎样。 */
 function outlook(a: Activity, slot: WeekSlot | undefined): Outlook {
@@ -57,10 +76,29 @@ function Gains({ a }: { a: Activity }) {
   return <div className="act-gain">{parts}</div>;
 }
 
-function Detail({ g, a, slot }: { g: GameState; a: Activity | undefined; slot: WeekSlot | undefined }) {
-  if (!a) return <div className="act-detail empty" />;
+function Detail({ g, slot, hover, current }: { g: GameState; slot: WeekSlot | undefined; hover: HoverStore; current: string | null }) {
+  const hovered = useSyncExternalStore(hover.subscribe, hover.get);
+  const id = hovered ?? current;
+  const a = id ? ACTIVITY_MAP[id] : undefined;
+  if (!a) {
+    if (!slot || slot.contest) return <div className="act-detail empty" />;
+    const w = WEATHER[slot.forecast];
+    const sky = slot.sky ? SKY_EVENT_MAP[slot.sky] : undefined;
+    return (
+      <div className="act-detail">
+        <div className="act-top">
+          <b>第{CN_NUM[g.slots.indexOf(slot) + 1]}周</b>
+        </div>
+        <p>
+          {w.glyph} 预报{w.name}　{MOON_GLYPH[slot.moon]} {MOON_LABEL[slot.moon]}
+        </p>
+        {sky ? <p className="outlook good">{sky.name}</p> : null}
+      </div>
+    );
+  }
   const locked = !canUse(g, a);
   const look = outlook(a, slot);
+  const taken = a.once && g.slots.some((s) => s !== slot && s.activity === a.id);
   return (
     <div className="act-detail">
       <div className="act-top">
@@ -69,10 +107,60 @@ function Detail({ g, a, slot }: { g: GameState; a: Activity | undefined; slot: W
       </div>
       <p>{locked && a.requires ? `要先买${SHOP_MAP[a.requires]?.name}。` : a.desc}</p>
       <Gains a={a} />
+      {taken ? <p className="outlook meh">这个月只能排一次。</p> : null}
       {look && !locked ? <p className={`outlook ${look}`}>{OUTLOOK_LINE[look]}</p> : null}
     </div>
   );
 }
+
+interface PaletteProps {
+  offer: string[] | undefined;
+  items: string[];
+  slot: WeekSlot | undefined;
+  slots: WeekSlot[];
+  planning: boolean;
+  hover: HoverStore;
+  onPick: (id: string) => void;
+}
+
+/** 活动板。不依赖悬停状态，鼠标移动时不会重画。 */
+const Palette = memo(function Palette({ offer, items, slot, slots, planning, hover, onPick }: PaletteProps) {
+  const list = ACTIVITIES.filter((a) => !offer || offer.includes(a.id));
+  return (
+    <div className={`palette${planning && !slot?.contest ? "" : " idle"}`} onMouseLeave={() => hover.set(null)}>
+      {CATEGORIES.map((cat) => (
+        <div key={cat} className="palette-col">
+          <h3>{cat}</h3>
+          {list
+            .filter((a) => a.cat === cat)
+            .map((a) => {
+              const locked = Boolean(a.requires && !items.includes(a.requires));
+              const taken = Boolean(a.once && slots.some((s) => s !== slot && s.activity === a.id));
+              const look = planning ? outlook(a, slot) : null;
+              return (
+                <button
+                  key={a.id}
+                  type="button"
+                  className={`chip${locked ? " locked" : ""}`}
+                  aria-pressed={slot?.activity === a.id}
+                  aria-disabled={locked || taken || undefined}
+                  disabled={!planning || Boolean(slot?.contest)}
+                  onClick={() => !locked && !taken && onPick(a.id)}
+                  onMouseEnter={() => hover.set(a.id)}
+                  onFocus={() => hover.set(a.id)}
+                  onBlur={() => hover.set(null)}
+                >
+                  {look ? <i className={`dot ${look}`} aria-hidden="true" /> : null}
+                  <span>{a.name}</span>
+                  {isSpecial(a) ? <em className="limited">本月</em> : null}
+                </button>
+              );
+            })}
+        </div>
+      ))}
+    </div>
+  );
+});
 
 function WeekCard({ g, slot, i, focus, planning, onFocus, onClear }: {
   g: GameState;
@@ -133,7 +221,7 @@ function WeekCard({ g, slot, i, focus, planning, onFocus, onClear }: {
 export function Planner({ g, onSet, onStart, onShop, speed, onSpeed }: Props) {
   const planning = g.phase === "plan";
   const [focus, setFocus] = useState(0);
-  const [hover, setHover] = useState<string | null>(null);
+  const [hover] = useState(createHover);
 
   // 换月时，焦点放到第一个空着的周
   useEffect(() => {
@@ -145,17 +233,15 @@ export function Planner({ g, onSet, onStart, onShop, speed, onSpeed }: Props) {
   }, [g.month, g.year, planning]);
 
   const slot = g.slots[focus];
-  const current = slot?.activity ? ACTIVITY_MAP[slot.activity] : undefined;
-  const shown = hover ? ACTIVITY_MAP[hover] : current;
 
-  function pick(id: string) {
-    if (!planning || !slot || slot.contest) return;
+  const pick = (id: string) => {
+    if (!planning || !slot || slot.contest || !offered(g, id)) return;
     onSet(focus, id);
     const next = g.slots.findIndex((s, i) => i > focus && !s.contest && !s.activity);
     const wrap = g.slots.findIndex((s, i) => i !== focus && !s.contest && !s.activity);
     if (next >= 0) setFocus(next);
     else if (wrap >= 0) setFocus(wrap);
-  }
+  };
 
   return (
     <>
@@ -198,35 +284,10 @@ export function Planner({ g, onSet, onStart, onShop, speed, onSpeed }: Props) {
         </div>
       </div>
 
-      <div className={`palette${planning && !slot?.contest ? "" : " idle"}`} onMouseLeave={() => setHover(null)}>
-        {CATEGORIES.map((cat) => (
-          <div key={cat} className="palette-col">
-            <h3>{cat}</h3>
-            {ACTIVITIES.filter((a) => a.cat === cat).map((a) => {
-              const locked = !canUse(g, a);
-              const look = planning ? outlook(a, slot) : null;
-              return (
-                <button
-                  key={a.id}
-                  type="button"
-                  className={`chip${locked ? " locked" : ""}`}
-                  aria-pressed={slot?.activity === a.id}
-                  aria-disabled={locked || undefined}
-                  disabled={!planning || Boolean(slot?.contest)}
-                  onClick={() => !locked && pick(a.id)}
-                  onMouseEnter={() => setHover(a.id)}
-                  onFocus={() => setHover(a.id)}
-                  onBlur={() => setHover(null)}
-                >
-                  {look ? <i className={`dot ${look}`} aria-hidden="true" /> : null}
-                  {a.name}
-                </button>
-              );
-            })}
-          </div>
-        ))}
+      <div className="board">
+        <Palette offer={g.offer} items={g.items} slot={slot} slots={g.slots} planning={planning} hover={hover} onPick={pick} />
+        {planning ? <Detail g={g} slot={slot} hover={hover} current={slot?.activity ?? null} /> : <div className="act-detail empty" />}
       </div>
-      {planning ? <Detail g={g} a={shown} slot={slot} /> : null}
     </>
   );
 }
