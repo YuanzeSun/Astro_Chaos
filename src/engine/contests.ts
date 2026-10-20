@@ -1,4 +1,4 @@
-import { clamp, rand, sample, pick } from "./rng";
+import { chance, clamp, rand, sample, pick } from "./rng";
 import type { Attr, ContestResultRow, GameState, PendingContest, Student } from "./types";
 import { CONTEST_MAP, type ContestDef } from "../data/contests";
 import { NIGHTS, type NightOption } from "../data/nights";
@@ -174,6 +174,15 @@ export function finishContest(g: GameState, p: PendingContest): ContestResultRow
   if (def.id === "final" && rows.some((r) => r.award === "一等奖")) {
     if (!g.flags.coachTitle) say(g, "principal", "恭喜！你被评为本届决赛“优秀辅导员”。学校会在橱窗里贴你的照片。");
     g.flags.coachTitle = (g.flags.coachTitle ?? 0) + 1;
+  }
+  if (chance(g, 0.3)) {
+    say(g, "torpedo", pick(g, [
+      "这届题太简单了，用微积分十秒秒杀。",
+      "你们学校这个成绩，建议来我们这报个班。",
+      "今年命题组水平不行，我已经写信给北京天文馆了。",
+      "这道题用雪比切夫不等式一眼就出来了。",
+      "考得好的那几个，以前都听过我的课。",
+    ]));
   }
   if (p.rival) {
     if (best && best.score > p.rival.score) {

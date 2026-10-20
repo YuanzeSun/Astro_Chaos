@@ -4,6 +4,7 @@ export const NPCS: Record<string, { name: string; hue: number; glyph: string }> 
   homeroom: { name: "班主任", hue: 30, glyph: "班" },
   principal: { name: "校长", hue: 45, glyph: "校" },
   rival: { name: "陆老师（实验中学）", hue: 280, glyph: "陆" },
+  torpedo: { name: "鱼雷老师（啵酱天文）", hue: 190, glyph: "雷" },
   parent: { name: "家长", hue: 60, glyph: "家" },
 };
 

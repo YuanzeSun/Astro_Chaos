@@ -50,8 +50,10 @@ export const PASSIVE_EVENTS: PassiveEvent[] = [
   { id: "eyeExam", text: "{a}去配了新眼镜，第一次看清了昴星团有七颗星。", actor: (s) => has(s, "astigmatism"), fx: { self: { removeTrait: "astigmatism" } }, tone: "good", once: true },
   { id: "groupRename", text: "{a}把群名改成了“今晚晴吗”。从此每晚七点都有人在群里问。", actor: (s) => has(s, "socialite"), fx: { morale: 2 }, tone: "info", once: true },
   { id: "bojiangBoast", text: "啵酱天文发推文：“今年预赛我们押中了 34 道题。剩下那一道，是题目出错了。”", when: (ctx) => ctx.g.month === 7, fx: { morale: 2 }, tone: "info", once: true },
-  { id: "bojiangFight", text: "啵酱天文又在网上和选手吵起来了，起因是对方说他模拟卷的第五题无解。吵了三百楼，{a}去算了一下：那道题确实无解。", fx: { attrs: { theory: 0.4 }, morale: 2 }, tone: "info", cooldown: 30 },
-  { id: "bojiangClass", text: "{a}去蹭了一节啵酱天文的公开课。讲的是“用塔罗牌理解赫罗图”，{a}中途就溜了。", fx: { self: { stress: 2 } }, tone: "info", once: true },
+  { id: "bojiangFight", text: "鱼雷老师又在网上和选手吵起来了，起因是对方说他模拟卷的第五题无解。吵了三百楼，{a}去算了一下：那道题确实无解。", fx: { attrs: { theory: 0.4 }, morale: 2 }, tone: "info", cooldown: 30 },
+  { id: "bojiangClass", text: "{a}去蹭了一节鱼雷老师的公开课。讲的是“用塔罗牌理解赫罗图”，{a}中途就溜了。", fx: { self: { stress: 2 } }, tone: "info", once: true },
+  { id: "torpedo", text: "鱼雷入侵！不知道谁把鱼雷老师的讲题视频设成了社团群的自动播放，一晚上循环了四十遍。", fx: { attrs: { knowledge: -1 }, stress: 5, morale: -2 }, tone: "bad", cooldown: 30 },
+  { id: "torpedoWorst", text: "鱼雷老师在朋友圈说，今年的国家队是历届水平最差的一届，以后上的大学也不会好。配图是他自己画的星图。", when: (ctx) => ctx.g.month >= 9, fx: { morale: 1 }, tone: "info", cooldown: 40 },
   { id: "noBaosongNews", text: "新闻里说，天文竞赛结果不作为招生依据。群里安静了一下午，然后有人发了一句：用爱发电。", fx: { morale: -2 }, tone: "info", once: true },
   { id: "qiaoYingzi", text: "某部电视剧里，女主角说她想去南大天文系。第二天，社里收到了一份入社申请。", fx: { recruit: true }, tone: "good", once: true },
 ];

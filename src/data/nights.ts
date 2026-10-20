@@ -50,7 +50,7 @@ export const NIGHTS: NightOption[] = [
   },
   {
     id: "bojiangLive",
-    label: "听啵酱天文的考前冲刺直播",
+    label: "听鱼雷老师的考前冲刺直播",
     contests: ["final"],
     chance: 0.3,
     win: { text: "讲了三个小时，前十分钟在讲题，后面全在讲他自己画的星图。有一张倒是画得挺好看。", bonus: { observe: 0.5 } },

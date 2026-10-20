@@ -66,7 +66,7 @@ export function monthDigest(g: GameState, fromChatId: number) {
   return JSON.stringify({ date: dateLabel(g.year, g.month), money: g.money, morale: Math.round(g.morale), members, happened });
 }
 
-const NPC_BY_NAME: Record<string, string> = { 教导主任: "dean", 班主任: "homeroom", 校长: "principal", 陆老师: "rival" };
+const NPC_BY_NAME: Record<string, string> = { 教导主任: "dean", 班主任: "homeroom", 校长: "principal", 陆老师: "rival", 鱼雷老师: "torpedo" };
 
 /** 把模型给的说话人映射回游戏里的 id，对不上的丢掉。 */
 export function speakerId(g: GameState, speaker: string) {
