@@ -25,7 +25,7 @@ import { ai, aiEnabled, monthDigest, setAiEnabled, speakerId } from "../ai/clien
 type Tab = "roster" | "plan" | "chat";
 
 export function App() {
-  const { game: g, act, restart } = useGame();
+  const { game: g, act, restart, playback, setSpeed, togglePause } = useGame();
   const [profile, setProfile] = useState<Profile>(loadProfile);
   const [aiOn, setAiOn] = useState(aiEnabled);
   const [shop, setShop] = useState(false);
@@ -141,6 +141,11 @@ export function App() {
                 <span>距{upcoming.contest.short}</span>
               </div>
             ) : null}
+            {g.phase === "running" ? (
+              <button type="button" className="icon-btn" aria-pressed={playback.paused} disabled={Boolean(g.pending)} onClick={togglePause}>
+                {playback.paused ? "继续推进" : "暂停推进"}
+              </button>
+            ) : null}
             <button type="button" className="icon-btn" onClick={() => setStats(true)}>
               统计
             </button>
@@ -218,6 +223,8 @@ export function App() {
       {settings ? (
         <Settings
           profile={profile}
+          speed={playback.speed}
+          onSpeed={setSpeed}
           aiOn={aiOn}
           onAi={(on) => {
             setAiOn(on);
