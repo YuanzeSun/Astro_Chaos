@@ -3,16 +3,19 @@ import { ACHIEVEMENTS } from "../data/achievements";
 import { ENDINGS } from "../data/endings";
 import type { Profile } from "./profile";
 import { AiAccounts } from "./AiSettings";
+import { PLAYBACK_SPEEDS, type PlaybackSpeed } from "./playback";
 
 interface Props {
   profile: Profile;
+  speed: PlaybackSpeed;
+  onSpeed: (speed: PlaybackSpeed) => void;
   aiOn: boolean;
   onAi: (on: boolean) => void;
   onRestart: () => void;
   onClose: () => void;
 }
 
-export function Settings({ profile, aiOn, onAi, onRestart, onClose }: Props) {
+export function Settings({ profile, speed, onSpeed, aiOn, onAi, onRestart, onClose }: Props) {
   const [confirm, setConfirm] = useState(false);
   return (
     <div className="scrim" role="dialog" aria-modal="true" aria-labelledby="settings-title" onClick={onClose}>
@@ -28,6 +31,18 @@ export function Settings({ profile, aiOn, onAi, onRestart, onClose }: Props) {
             </span>
           ))}
         </div>
+
+        <div className="switch-row">
+          <b style={{ fontWeight: 600 }}>推进速度</b>
+          <div className="speed" role="group" aria-label="推进速度">
+            {PLAYBACK_SPEEDS.map((value) => (
+              <button key={value} type="button" aria-pressed={speed === value} onClick={() => onSpeed(value)}>
+                {value === 0.5 ? "慢速" : value === 1 ? "正常" : "快速"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="meta">想慢慢看群聊和周报时，可以在页面上方暂停推进。</p>
 
         <div className="switch-row">
           <b style={{ fontWeight: 600 }}>AI 群友</b>
