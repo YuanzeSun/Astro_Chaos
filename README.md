@@ -24,7 +24,15 @@
 
 ## 开始玩
 
-需要 Node.js 20 以上。
+### 在线游玩
+
+[打开在线版](https://yuanzesun.github.io/Astro_Chaos/)（启用 GitHub Pages 后可用）。无需安装，存档保存在当前浏览器中。
+
+我们提供的 GitHub Pages 在线版不支持 AI 群友，因为这项功能需要本地服务器。其他游戏功能可以正常使用。想使用 AI 群友，可以按下面的方法本地部署。
+
+### 本地部署（支持 AI 群友）
+
+本地运行需要 Node.js 20 以上。
 
 ```bash
 npm install
@@ -36,6 +44,12 @@ npm start
 社团群里可以请 AI 来扮演社员聊天，在游戏的设置里打开。游戏会直接用你电脑上配好的 Claude Code 或 Codex，也可以在设置里用 ChatGPT 账号登录，或填一个 DeepSeek 的 key。费用记在你自己的账上。不开也照样能玩。
 
 开发相关的说明在 `doc/开发说明.md`。
+
+### 发布 GitHub Pages
+
+在仓库 Settings → Pages 中将 Source 设为 GitHub Actions。推送到 `main` 后，工作流会自动构建并发布 `dist/`；也可以在 Actions 中手动运行 Deploy to GitHub Pages。
+
+只有 Pages 工作流会设置 `VITE_GITHUB_PAGES=true`，用于关闭在线版的 AI 入口。按上述命令本地部署时，无需设置这个变量，AI 群友功能仍然保留。
 
 ## 说明
 

@@ -20,9 +20,10 @@ export type ModelList = { ok: true; models: string[] } | { ok: false } | null;
 export type Catalog = Record<"anthropic" | "openai" | "chatgpt" | "deepseek", ModelList>;
 
 const ENABLED_KEY = "astro-chaos:v3:ai";
+export const isGitHubPages = import.meta.env.VITE_GITHUB_PAGES === "true";
 
 export function aiEnabled(): boolean {
-  return localStorage.getItem(ENABLED_KEY) === "on";
+  return !isGitHubPages && localStorage.getItem(ENABLED_KEY) === "on";
 }
 
 export function setAiEnabled(on: boolean) {

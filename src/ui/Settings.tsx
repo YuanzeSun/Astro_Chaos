@@ -3,6 +3,7 @@ import { ACHIEVEMENTS } from "../data/achievements";
 import { ENDINGS } from "../data/endings";
 import type { Profile } from "./profile";
 import { AiAccounts } from "./AiSettings";
+import { isGitHubPages } from "../ai/client";
 import { PLAYBACK_SPEEDS, type PlaybackSpeed } from "./playback";
 
 interface Props {
@@ -44,18 +45,24 @@ export function Settings({ profile, speed, onSpeed, aiOn, onAi, onRestart, onClo
         </div>
         <p className="meta">想慢慢看群聊和周报时，可以在页面上方暂停推进。</p>
 
-        <div className="switch-row">
-          <b style={{ fontWeight: 600 }}>AI 群友</b>
-          <div className="speed" role="group" aria-label="AI 群友">
-            <button type="button" aria-pressed={!aiOn} onClick={() => onAi(false)}>
-              关
-            </button>
-            <button type="button" aria-pressed={aiOn} onClick={() => onAi(true)}>
-              开
-            </button>
-          </div>
-        </div>
-        {aiOn ? <AiAccounts /> : null}
+        {isGitHubPages ? (
+          <p className="meta">在线版不支持 AI 群友。想使用 AI 群友，可以下载源码并按 README 的说明在本地运行。</p>
+        ) : (
+          <>
+            <div className="switch-row">
+              <b style={{ fontWeight: 600 }}>AI 群友</b>
+              <div className="speed" role="group" aria-label="AI 群友">
+                <button type="button" aria-pressed={!aiOn} onClick={() => onAi(false)}>
+                  关
+                </button>
+                <button type="button" aria-pressed={aiOn} onClick={() => onAi(true)}>
+                  开
+                </button>
+              </div>
+            </div>
+            {aiOn ? <AiAccounts /> : null}
+          </>
+        )}
 
         <div className="card-foot" style={{ justifyContent: "space-between" }}>
           {confirm ? (
